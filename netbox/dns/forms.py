@@ -29,6 +29,16 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
 			'soa_expire': 'SOA Expire',
 			'soa_minimum': 'SOA Minimum',
 		}
+		help_texts = {
+			'ttl': "Time to live, in seconds",
+			'soa_name': "The primary name server for the domain, @ for origin",
+			'soa_contact': "The responsible party for the domain (e.g. ns.foo.net. noc.foo.net.)",
+			'soa_serial': "Serial string in SOA record (e.g. 2016071401)",
+			'soa_refresh': "Refresh time, in seconds",
+			'soa_retry': "Retry time, in seconds",
+			'soa_expire': "Expire time, in seconds",
+			'soa_minimum': "Negative result TTL, in seconds"
+		}
 
 class ZoneFromCSVForm(forms.ModelForm):
 
@@ -68,6 +78,14 @@ class RecordForm(forms.ModelForm, BootstrapMixin):
 		fields = ['name', 'record_type', 'priority', 'zone', 'address', 'value']
 		labels = {
 			'record_type': 'Type',
+		}
+		help_texts = {
+			'name': 'Host name, @ for origin (e.g. www)',
+			'record_type': 'Record type (e.g. MX or AAAA)',
+			'priority': 'Priority level (e.g. 10)',
+			'zone': 'Zone the record belongs to',
+			'address': 'IP address if value is an IP address, in AAAA records for instance',
+			'value': 'Text value else, in CNAME records for instance'
 		}
 
 class RecordFromCSVForm(forms.ModelForm):
