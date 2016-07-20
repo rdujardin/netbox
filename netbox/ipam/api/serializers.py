@@ -142,7 +142,7 @@ class IPAddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IPAddress
-        fields = ['id', 'family', 'address', 'vrf', 'interface', 'description', 'nat_inside', 'nat_outside']
+        fields = ['id', 'family', 'address', 'vrf', 'hostname', 'interface', 'description', 'nat_inside', 'nat_outside']
 
 
 class IPAddressNestedSerializer(IPAddressSerializer):

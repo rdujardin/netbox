@@ -1,0 +1,82 @@
+{% extends '_base.html' %}
+{% load render_table from django_tables2 %}
+{% load form_helpers %}
+
+{% block title %}Zone Import{% endblock %}
+
+{% block content %}
+<h1>Zone Import</h1>
+<div class="row">
+	<div class="col-md-6">
+		<form action="." method="post" class="form">
+		    {% csrf_token %}
+		    {% render_form form %}
+		    <div class="form-group">
+		        <button type="submit" class="btn btn-primary">Submit</button>
+		        <a href="{% url obj_list_url %}" class="btn btn-default">Cancel</a>
+		    </div>
+		</form>
+	</div>
+	<div class="col-md-6">
+		<h4>CSV Format</h4>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Field</th>
+					<th>Description</th>
+					<th>Example</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Name</td>
+					<td>Name of zone</td>
+					<td>foo.net</td>
+				</tr>
+				<tr>
+					<td>TTL</td>
+					<td>Time to live, in seconds</td>
+					<td>10800</td>
+				</tr>
+				<tr>
+					<td>SOA Name</td>
+					<td>SOA name field, @ for origin</td>
+					<td>@</td>
+				</tr>
+				<tr>
+					<td>SOA Contact</td>
+					<td>SOA contact field</td>
+					<td>ns.foo.net. noc.foo.net.</td>
+				</tr>
+				<tr>
+					<td>SOA Serial</td>
+					<td>Serial code of zone (string)</td>
+					<td>2016070401</td>
+				</tr>
+				<tr>
+					<td>SOA Refresh</td>
+					<td>SOA refresh time field, in seconds</td>
+					<td>3600</td>
+				</tr>
+				<tr>
+					<td>SOA Retry</td>
+					<td>SOA retry time field, in seconds</td>
+					<td>3600</td>
+				</tr>
+				<tr>
+					<td>SOA Expire</td>
+					<td>SOA expire time field, in seconds</td>
+					<td>604800</td>
+				</tr>
+				<tr>
+					<td>SOA Minimum</td>
+					<td>SOA minimum time field, in seconds</td>
+					<td>1800</td>
+				</tr>
+			</tbody>
+		</table>
+		<h4>Example</h4>
+		<pre>foo.net,10800,@,ns.foo.net. noc.foo.net.,2016070401,3600,3600,604800,1800</pre>
+	</div>
+</div>
+{% endblock %}

@@ -65,6 +65,16 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>Host Name</td>
+                    <td>
+                        {% if ipaddress.hostname %}
+                            <span>{{ ipaddress.hostname }}</span>
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <td>Description</td>
                     <td>
                         {% if ipaddress.description  %}
@@ -129,6 +139,9 @@
         {% endif %}
         {% with heading='Related IP Addresses' %}
             {% render_table related_ips_table 'panel_table.html' %}
+        {% endwith %}
+        {% with heading='Related DNS Records' %}
+            {% render_table dns_records_table 'panel_table.html' %}
         {% endwith %}
 	</div>
 </div>

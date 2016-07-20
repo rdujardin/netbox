@@ -304,6 +304,7 @@ class IPAddress(CreatedUpdatedModel):
     address = IPAddressField()
     vrf = models.ForeignKey('VRF', related_name='ip_addresses', on_delete=models.PROTECT, blank=True, null=True,
                             verbose_name='VRF')
+    hostname = models.CharField(max_length=100, blank=True, verbose_name='Host Name')
     interface = models.ForeignKey(Interface, related_name='ip_addresses', on_delete=models.CASCADE, blank=True,
                                   null=True)
     nat_inside = models.OneToOneField('self', related_name='nat_outside', on_delete=models.SET_NULL, blank=True,
@@ -354,6 +355,7 @@ class IPAddress(CreatedUpdatedModel):
         return ','.join([
             str(self.address),
             self.vrf.rd if self.vrf else '',
+            self.hostname if self.hostname else '',
             self.device.identifier if self.device else '',
             self.interface.name if self.interface else '',
             'True' if is_primary else '',

@@ -6,6 +6,8 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 
 from dcim.models import Device
+from dns.models import Zone, Record
+from dns.tables import RecordBriefTable
 from utilities.paginator import EnhancedPaginator
 from utilities.views import (
     BulkDeleteView, BulkEditView, BulkImportView, ObjectDeleteView, ObjectEditView, ObjectListView,
@@ -409,11 +411,17 @@ def ipaddress(request, pk):
         .filter(vrf=ipaddress.vrf, address__net_contained_or_equal=str(ipaddress.address))
     related_ips_table = tables.IPAddressBriefTable(related_ips)
 
+    # Related DNS records
+    dns_records = Record.objects.filter(address=ipaddress)
+    dns_records_table = RecordBriefTable(dns_records)
+
+
     return render(request, 'ipam/ipaddress.html', {
         'ipaddress': ipaddress,
         'parent_prefixes_table': parent_prefixes_table,
         'duplicate_ips_table': duplicate_ips_table,
         'related_ips_table': related_ips_table,
+        'dns_records_table': dns_records_table,
     })
 
 

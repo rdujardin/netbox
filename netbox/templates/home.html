@@ -124,6 +124,23 @@
         </div>
         <div class="panel panel-default">
             <div class="panel-heading">
+                <strong>DNS</strong>
+            </div>
+            <div class="list-group">
+                <div class="list-group-item">
+                    <span class="badge pull-right">{{ stats.zone_count }}</span>
+                    <h4 class="list-group-item-heading"><a href="{% url 'dns:zone_list' %}">Zones</a></h4>
+                    <p class="list-group-item-text text-muted">Domain name system zones</p>
+                </div>
+                <div class="list-group-item">
+                    <span class="badge pull-right">{{ stats.record_count }}</span>
+                    <h4 class="list-group-item-heading"><a href="{% url 'dns:record_list' %}">Records</a></h4>
+                    <p class="list-group-item-text text-muted">Links between a hostname and a resource</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading">
                 <strong>Circuits</strong>
             </div>
             <div class="list-group">
