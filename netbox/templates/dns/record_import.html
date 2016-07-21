@@ -39,6 +39,11 @@
 					<td>www</td>
 				</tr>
 				<tr>
+					<td>Category</td>
+					<td>Category (e.g. SLA, Server or Customer ; optional)</td>
+					<td>Server</td>
+				</tr>
+				<tr>
 					<td>Type</td>
 					<td>Record type</td>
 					<td>AAAA</td>
@@ -58,10 +63,15 @@
 					<td>Text value else, in CNAME records for instance</td>
 					<td>foo.net</td>
 				</tr>
+				<tr>
+					<td>Description</td>
+					<td>Description (optional)</td>
+					<td>Backend API server</td>
+				</tr>
 			</tbody>
 		</table>
 		<h4>Example</h4>
-		<pre>foo.net,www,AAAA,,192.168.1.110/16,</pre>
+		<pre>foo.net,www,Server,AAAA,,192.168.1.110/16,,Backend API server</pre>
 	</div>
 </div>
 {% endblock %}

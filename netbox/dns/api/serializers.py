@@ -13,7 +13,7 @@ class ZoneSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model=Zone
-		fields = ['id', 'name', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
+		fields = ['id', 'name', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
 
 	def get_bind_export(self, obj):
 		records = Record.objects.filter(zone=obj)
@@ -39,7 +39,7 @@ class RecordSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model=Record
-		fields = ['id', 'name', 'record_type', 'priority', 'zone', 'address', 'value']
+		fields = ['id', 'name', 'category', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
 
 	def get_bind_export(self, obj):
 		return {

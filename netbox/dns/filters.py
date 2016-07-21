@@ -6,13 +6,13 @@ from .models import (
 	Zone,
 	Record,
 )
-from .forms import record_type_choices
+from .forms import record_type_choices, record_category_choices
 
 class ZoneFilter(django_filters.FilterSet):
 	name = django_filters.CharFilter(
-		name='name',
-		lookup_type='icontains',
-		label='Name',
+		name = 'name',
+		lookup_type = 'icontains',
+		label = 'Name',
 	)
 
 	class Meta:
@@ -21,29 +21,34 @@ class ZoneFilter(django_filters.FilterSet):
 
 class RecordFilter(django_filters.FilterSet):
 	zone__name = django_filters.ModelMultipleChoiceFilter(
-		name='zone__name',
-		to_field_name='name',
-		lookup_type='icontains',
-		queryset=Zone.objects.all(),
-		label='Zone (Name)',
+		name = 'zone__name',
+		to_field_name = 'name',
+		lookup_type = 'icontains',
+		queryset = Zone.objects.all(),
+		label = 'Zone (Name)',
 	)
  	record_type = django_filters.MultipleChoiceFilter(
- 		name='record_type',
- 		label='Type',
- 		choices=record_type_choices
+ 		name = 'record_type',
+ 		label = 'Type',
+ 		choices = record_type_choices
+ 	)
+ 	cateogry = django_filters.MultipleChoiceFilter(
+ 		name = 'category',
+ 		label = 'Category',
+ 		choices = record_category_choices
  	)
 	name = django_filters.CharFilter(
-		name='name',
-		lookup_type='icontains',
-		label='Name',
+		name = 'name',
+		lookup_type = 'icontains',
+		label = 'Name',
 	)
 	name_or_value = django_filters.MethodFilter(
-		name='name_or_value',
+		name = 'name_or_value',
 	)
 
 	class Meta:
 		model=Record
-		field = ['name','record_type','value']
+		field = ['name', 'record_type', 'value', 'category']
 
 	def filter_name_or_value(self, queryset, value):
 		if not value:

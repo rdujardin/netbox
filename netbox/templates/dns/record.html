@@ -57,6 +57,15 @@
                     <td>{{ record.name }}</td>
                 </tr>
                 <tr>
+                    <td>Category</td>
+                    <td>
+                        {% if record.category %}
+                            {{ record.category }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                <tr>
                     <td>Type</td>
                     <td>{{ record.record_type }}</td>
                 </tr>
@@ -85,6 +94,16 @@
                     <td>
                         {% if record.value %}
                             {{ record.value }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>
+                        {% if record.description %}
+                            {{ record.description }}
                         {% else %}
                             -
                         {% endif %}

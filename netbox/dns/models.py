@@ -13,15 +13,16 @@ class Zone(CreatedUpdatedModel):
 	"""
 	A Zone represents a DNS zone. It contains SOA data but no records, records are represented as Record objects.
 	"""
-	name=models.CharField(max_length=100)
-	ttl=models.PositiveIntegerField()
-	soa_name=models.CharField(max_length=100)
-	soa_contact=models.CharField(max_length=100)
-	soa_serial=models.CharField(max_length=100)
-	soa_refresh=models.PositiveIntegerField()
-	soa_retry=models.PositiveIntegerField()
-	soa_expire=models.PositiveIntegerField()
-	soa_minimum=models.PositiveIntegerField()
+	name = models.CharField(max_length=100)
+	ttl = models.PositiveIntegerField()
+	soa_name = models.CharField(max_length=100)
+	soa_contact = models.CharField(max_length=100)
+	soa_serial = models.CharField(max_length=100)
+	soa_refresh = models.PositiveIntegerField()
+	soa_retry = models.PositiveIntegerField()
+	soa_expire = models.PositiveIntegerField()
+	soa_minimum = models.PositiveIntegerField()
+	description = models.CharField(max_length=100, blank=True)
 
 	class Meta:
 		ordering = ['name']
@@ -43,6 +44,7 @@ class Zone(CreatedUpdatedModel):
 			str(self.soa_retry),
 			str(self.soa_expire),
 			str(self.soa_minimum),
+			self.description,
 		])
 
 	def to_bind(self,records):
@@ -50,6 +52,7 @@ class Zone(CreatedUpdatedModel):
 		for r in records:
 			bind_records += r.to_bind()+'\n'
 		bind_export = '\n'.join([
+			'; '+self.name+((' ('+self.description+')') if self.description else ''),
 			'; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) ',
 			'',
 			'$TTL '+str(self.ttl),
@@ -73,15 +76,17 @@ class Record(CreatedUpdatedModel):
 	"""
 	A Record represents a DNS record, i.e. a row in a DNS zone.
 	"""
-	name=models.CharField(max_length=100)
-	record_type=models.CharField(max_length=10)
-	priority=models.PositiveIntegerField(blank=True, null=True)
-	zone=models.ForeignKey('Zone', related_name='records', on_delete=models.CASCADE)
-	address=models.ForeignKey('ipam.IPAddress', related_name='records', on_delete=models.SET_NULL, blank=True, null=True)
-	value=models.CharField(max_length=100, blank=True)
+	name = models.CharField(max_length=100)
+	record_type = models.CharField(max_length=10)
+	priority = models.PositiveIntegerField(blank=True, null=True)
+	zone = models.ForeignKey('Zone', related_name='records', on_delete=models.CASCADE)
+	address = models.ForeignKey('ipam.IPAddress', related_name='records', on_delete=models.SET_NULL, blank=True, null=True)
+	value = models.CharField(max_length=100, blank=True)
+	category = models.CharField(max_length=20, blank=True)
+	description = models.CharField(max_length=20, blank=True)
 
 	class Meta:
-		ordering = ['name']
+		ordering = ['category']
 
 	def __unicode__(self):
 		return self.name
@@ -98,10 +103,12 @@ class Record(CreatedUpdatedModel):
 		return ','.join([
 			self.zone.name,
 			self.name,
+			self.category,
 			self.record_type,
 			str(self.priority) if self.priority else '',
 			str(self.address) if self.address else '',
-			str(self.value) if self.value else '',
+			self.value,
+			self.description,
 		])
 
 	def to_bind(self):
@@ -114,7 +121,7 @@ class Record(CreatedUpdatedModel):
 			'    ',
 			(str(self.address).split('/')[0] if self.address else self.value).ljust(25),
 			'  ',
-			' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) '
+			' ; '+self.description+' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) '
 		])
 
 
