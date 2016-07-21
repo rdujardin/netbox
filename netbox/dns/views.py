@@ -3,6 +3,7 @@ from django_tables2 import RequestConfig
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse
 
 from ipam.models import IPAddress
 from utilities.paginator import EnhancedPaginator
@@ -30,12 +31,24 @@ def zone(request, pk):
 	zone = get_object_or_404(Zone.objects.all(), pk=pk)
 	records = Record.objects.filter(zone=zone)
 	record_count = len(records)
+	bind_export = zone.to_bind(records)
 
-	return render(request, 'dns/zone.html', {
-		'zone': zone,
-		'records': records,
-		'record_count': record_count,
-	})
+	if request.GET.get('bind_export'):
+		response = HttpResponse(
+			bind_export,
+			content_type='text/plain'
+		)
+		response['Content-Disposition'] = 'attachment; filename="netbox_{}.txt"'\
+			.format(zone.name)
+		return response
+
+	else: 
+		return render(request, 'dns/zone.html', {
+			'zone': zone,
+			'records': records,
+			'record_count': record_count,
+			'bind_export': bind_export,
+		})
 
 class ZoneEditView(PermissionRequiredMixin, ObjectEditView):
 	permission_required = 'dns.change_zone'
@@ -94,9 +107,11 @@ class RecordListView(ObjectListView):
 def record(request, pk):
 
 	record = get_object_or_404(Record.objects.all(), pk=pk)
+	bind_export = record.to_bind()
 
 	return render(request, 'dns/record.html', {
 		'record': record,
+		'bind_export': bind_export,
 	})
 
 class RecordEditView(PermissionRequiredMixin, ObjectEditView):

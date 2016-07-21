@@ -7,6 +7,8 @@ from django.db import models
 from ipam.models import IPAddress
 from utilities.models import CreatedUpdatedModel
 
+import time
+
 class Zone(CreatedUpdatedModel):
 	"""
 	A Zone represents a DNS zone. It contains SOA data but no records, records are represented as Record objects.
@@ -43,6 +45,28 @@ class Zone(CreatedUpdatedModel):
 			str(self.soa_minimum),
 		])
 
+	def to_bind(self,records):
+		bind_records = ''
+		for r in records:
+			bind_records += r.to_bind()+'\n'
+		bind_export = '\n'.join([
+			'; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) ',
+			'',
+			'$TTL '+str(self.ttl),
+			self.soa_name.ljust(30)+'    IN    '+'SOA                   '+self.soa_contact+' (',
+			'    '+self.soa_serial.ljust(30)+' ; serial',
+			'    '+str(self.soa_refresh).ljust(30)+' ; refresh',
+			'    '+str(self.soa_retry).ljust(30)+' ; retry',
+			'    '+str(self.soa_expire).ljust(30)+' ; expire',
+			'    '+str(self.soa_minimum).ljust(29)+') ; minimum',
+			'',
+			'',
+			'',
+		])
+		bind_export += '\n'+bind_records
+		bind_export += '\n'+'; end '
+		return bind_export
+
 
 
 class Record(CreatedUpdatedModel):
@@ -66,6 +90,7 @@ class Record(CreatedUpdatedModel):
 		return reverse('dns:record', args=[self.pk])
 
 	def clean(self):
+		record_type = record_type.upper()
 		if not self.address and not self.value:
 			raise ValidationError("DNS records must have either an IP address or a text value")
 
@@ -79,5 +104,17 @@ class Record(CreatedUpdatedModel):
 			str(self.value) if self.value else '',
 		])
 
-	#def to_json(self):
-	#	return JSON
+	def to_bind(self):
+		return ''.join([
+			(self.name if self.name!='@' else '').ljust(30),
+			'    IN    ',
+			self.record_type.upper().ljust(10),
+			'    ',
+			(str(self.priority) if self.priority else '').ljust(4),
+			'    ',
+			(str(self.address).split('/')[0] if self.address else self.value).ljust(25),
+			'  ',
+			' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) '
+		])
+
+

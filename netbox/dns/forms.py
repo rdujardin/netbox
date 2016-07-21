@@ -116,12 +116,19 @@ def record_zone_choices():
 	zone_choices = Zone.objects.annotate(record_count=Count('records'))
 	return [(z.name, '{} ({})'.format(z.name, z.record_count)) for z in zone_choices]
 
-#def record_name_choices():
-	#name_choices = 
+def record_type_choices():
+	type_choices = {}
+	records = Record.objects.all()
+	for r in records:
+		if not r.record_type in type_choices:
+			type_choices[r.record_type]=1
+		else:
+			type_choices[r.record_type]+=1
+	return [(t, '{} ({})'.format(t, count)) for t,count in type_choices.items()]
 
 class RecordFilterForm(forms.Form, BootstrapMixin):
 	zone__name = forms.MultipleChoiceField(required=False, choices=record_zone_choices, label='Zone',
 										widget=forms.SelectMultiple(attrs={'size': 8}))
-	#name = forms.MultipleChoiceField(required=False, choices=record_name_choices, label='Name', widget=forms.SelectMultiple(attrs={'size': 8}))
-	record_type = forms.CharField(max_length=100, required=False, label='Type')
+	record_type = forms.MultipleChoiceField(required=False, choices=record_type_choices, label='Type',
+										widget=forms.SelectMultiple(attrs={'size': 8}))
 
