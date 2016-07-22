@@ -6,7 +6,7 @@ from .models import (
 	Zone,
 	Record,
 )
-from .forms import record_type_choices, record_category_choices
+from .forms import record_type_choices
 
 class ZoneFilter(django_filters.FilterSet):
 	name = django_filters.CharFilter(
@@ -32,11 +32,6 @@ class RecordFilter(django_filters.FilterSet):
  		label = 'Type',
  		choices = record_type_choices
  	)
- 	cateogry = django_filters.MultipleChoiceFilter(
- 		name = 'category',
- 		label = 'Category',
- 		choices = record_category_choices
- 	)
 	name = django_filters.CharFilter(
 		name = 'name',
 		lookup_type = 'icontains',
@@ -48,7 +43,7 @@ class RecordFilter(django_filters.FilterSet):
 
 	class Meta:
 		model=Record
-		field = ['name', 'record_type', 'value', 'category']
+		field = ['name', 'record_type', 'value']
 
 	def filter_name_or_value(self, queryset, value):
 		if not value:

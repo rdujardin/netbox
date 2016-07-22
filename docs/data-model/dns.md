@@ -4,8 +4,12 @@ The DNS component of NetBox deals with the management of DNS zones.
 
 A zone corresponds to a zone file in a DNS server, it stores the SOA (Start Of Authority) record and other records that are stored as Record objects.
 
-As zones are readable through the REST API, it is possible to write some external script which automatically generates zone files for a DNS server,
-this feature is not directly provided by NetBox though.
+The SOA Serial field is automatically created and updated each time something changes in the zone, i.e. each time you edit IP addresses or records
+belonging to the zone, or the zone itself. It's in the following format : YYYYMMDDN with Y the year, M the month, D the day and N a counter.
+
+Every zone can be exported as a zone file in BIND format, directly readable by a DNS server. As zones are readable through the REST API,
+with a field containing their BIND format, it is possible to write an external script which automatically updates a DNS server
+configuration from the Netbox database.
 
 ---
 

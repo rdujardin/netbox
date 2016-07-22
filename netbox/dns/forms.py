@@ -19,11 +19,10 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
 
 	class Meta:
 		model=Zone
-		fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
+		fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
 		labels = {
 			'soa_name': 'SOA Name',
 			'soa_contact': 'SOA Contact',
-			'soa_serial': 'SOA Serial',
 			'soa_refresh': 'SOA Refresh',
 			'soa_retry': 'SOA Retry',
 			'soa_expire': 'SOA Expire',
@@ -34,7 +33,6 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
 			'ttl': "Time to live, in seconds",
 			'soa_name': "The primary name server for the domain, @ for origin",
 			'soa_contact': "The responsible party for the domain (e.g. ns.foo.net. noc.foo.net.)",
-			'soa_serial': "Serial string in SOA record (e.g. 2016071401)",
 			'soa_refresh': "Refresh time, in seconds",
 			'soa_retry': "Retry time, in seconds",
 			'soa_expire': "Expire time, in seconds",
@@ -45,7 +43,7 @@ class ZoneFromCSVForm(forms.ModelForm):
 
 	class Meta:
 		model=Zone
-		fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
+		fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
 
 class ZoneImportForm(BulkImportForm, BootstrapMixin):
 	csv = CSVDataField(csv_form=ZoneFromCSVForm)
@@ -77,14 +75,13 @@ class RecordForm(forms.ModelForm, BootstrapMixin):
 
 	class Meta:
 		model=Record
-		fields = ['name', 'category', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
+		fields = ['name', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
 		labels = {
 			'record_type': 'Type',
 		}
 		help_texts = {
 			'name': 'Host name, @ for origin (e.g. www)',
 			'record_type': 'Record type (e.g. MX or AAAA)',
-			'category': 'Category (e.g. SLA, Server or Customer)',
 			'priority': 'Priority level (e.g. 10)',
 			'zone': 'Zone the record belongs to',
 			'address': 'IP address if value is an IP address, in AAAA records for instance',
@@ -98,7 +95,15 @@ class RecordFromCSVForm(forms.ModelForm):
 
 	class Meta:
 		model=Record
-		fields = ['zone', 'name', 'category', 'record_type', 'priority', 'address', 'value', 'description']
+		fields = ['zone', 'name', 'record_type', 'priority', 'address', 'value', 'description']
+
+# class RecordBINDImportForm(forms.Form, BootstrapMixin):
+# 	bind = BINDDataField()
+# 	zone_name = CharField(max_length=100, label='Zone')
+# 	slash_v4 = IntegerField()
+
+# 	def clean(self):
+# 		self.cleaned_data
 
 class RecordImportForm(BulkImportForm, BootstrapMixin):
 	csv = CSVDataField(csv_form=RecordFromCSVForm)
@@ -106,7 +111,6 @@ class RecordImportForm(BulkImportForm, BootstrapMixin):
 class RecordBulkEditForm(forms.Form, BootstrapMixin):
 	pk = forms.ModelMultipleChoiceField(queryset=Record.objects.all(), widget=forms.MultipleHiddenInput)
 	name = forms.CharField(max_length=100, required=False, label='Name')
-	category = forms.CharField(max_length=100, required=False, label='Category')
 	record_type = forms.CharField(max_length=100, required=False, label='Type')
 	priority = forms.IntegerField(required=False)
 	zone = forms.ModelChoiceField(queryset=Zone.objects.all(), required=False)
@@ -130,22 +134,9 @@ def record_type_choices():
 			type_choices[r.record_type]+=1
 	return [(t, '{} ({})'.format(t, count)) for t,count in type_choices.items()]
 
-def record_category_choices():
-	category_choices = {}
-	records = Record.objects.all()
-	for r in records:
-		if r.category:
-			if not r.category in category_choices:
-				category_choices[r.category]=1
-			else:
-				category_choices[r.category]+=1
-	return [(c, '{} ({})'.format(c, count)) for c,count in category_choices.items()]
-
 class RecordFilterForm(forms.Form, BootstrapMixin):
 	zone__name = forms.MultipleChoiceField(required=False, choices=record_zone_choices, label='Zone',
 										widget=forms.SelectMultiple(attrs={'size': 8}))
 	record_type = forms.MultipleChoiceField(required=False, choices=record_type_choices, label='Type',
-										widget=forms.SelectMultiple(attrs={'size': 8}))
-	category = forms.MultipleChoiceField(required=False, choices=record_category_choices, label='Category',
 										widget=forms.SelectMultiple(attrs={'size': 8}))
 

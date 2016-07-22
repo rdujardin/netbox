@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import models
 
-from ipam.models import IPAddress
+#from ipam.models import IPAddress
 from utilities.models import CreatedUpdatedModel
 
 import time
@@ -32,6 +32,29 @@ class Zone(CreatedUpdatedModel):
 
 	def get_absolute_url(self):
 		return reverse('dns:zone', args=[self.pk])
+
+	def save(self, *args, **kwargs):
+		self.update_serial()
+		super(Zone, self).save(*args, **kwargs)
+
+	def update_serial(self):
+		"""
+		Each time a record or the zone is modified, the serial is incremented.
+		"""
+		current_date = time.strftime('%Y%m%d',time.localtime())
+		if not self.soa_serial:
+			self.soa_serial = current_date+'1'
+		else:
+			serial_date = self.soa_serial[:8]
+			serial_num = self.soa_serial[8:]
+			
+			if serial_date!=current_date:
+				self.soa_serial = current_date+'1'
+			else:
+				serial_num = int(serial_num)
+				serial_num += 1
+				self.soa_serial = current_date + str(serial_num)
+
 
 	def to_csv(self):
 		return ','.join([
@@ -80,13 +103,12 @@ class Record(CreatedUpdatedModel):
 	record_type = models.CharField(max_length=10)
 	priority = models.PositiveIntegerField(blank=True, null=True)
 	zone = models.ForeignKey('Zone', related_name='records', on_delete=models.CASCADE)
-	address = models.ForeignKey('ipam.IPAddress', related_name='records', on_delete=models.SET_NULL, blank=True, null=True)
+	address = models.ForeignKey('ipam.IPAddress', related_name='records', on_delete=models.PROTECT, blank=True, null=True)
 	value = models.CharField(max_length=100, blank=True)
-	category = models.CharField(max_length=20, blank=True)
 	description = models.CharField(max_length=20, blank=True)
 
 	class Meta:
-		ordering = ['category']
+		ordering = ['name']
 
 	def __unicode__(self):
 		return self.name
@@ -95,15 +117,23 @@ class Record(CreatedUpdatedModel):
 		return reverse('dns:record', args=[self.pk])
 
 	def clean(self):
-		record_type = record_type.upper()
+		self.record_type = self.record_type.upper()
 		if not self.address and not self.value:
 			raise ValidationError("DNS records must have either an IP address or a text value")
+	
+	def save(self, *args, **kwargs):
+		self.zone.save() # in order to update serial.
+		super(Record, self).save(*args, **kwargs)
+
+	#POST_DELETE RECEIVER !!!
+	def delete(self, *args, **kwargs):
+		self.zone.save() # in order to update serial.
+		super(Record, self).delete(*args, **kwargs)
 
 	def to_csv(self):
 		return ','.join([
 			self.zone.name,
 			self.name,
-			self.category,
 			self.record_type,
 			str(self.priority) if self.priority else '',
 			str(self.address) if self.address else '',

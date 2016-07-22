@@ -83,7 +83,10 @@ class ZoneBulkEditView(PermissionRequiredMixin, BulkEditView):
 			if form.cleaned_data[field]:
 				fields_to_update[field] = form.cleaned_data[field]
 
-		return self.cls.objects.filter(pk__in=pk_list).update(**fields_to_update)
+		zlist = self.cls.objects.filter(pk__in=pk_list)
+		for z in zlist:
+			z.save()
+		return zlist.update(**fields_to_update)
 
 
 class ZoneBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
@@ -146,7 +149,10 @@ class RecordBulkEditView(PermissionRequiredMixin, BulkEditView):
 			if form.cleaned_data[field]:
 				fields_to_update[field] = form.cleaned_data[field]
 
-		return self.cls.objects.filter(pk__in=pk_list).update(**fields_to_update)
+		rlist = self.cls.objects.filter(pk__in=pk_list)
+		if rlist:
+			rlist[0].save()
+		return rlist.update(**fields_to_update)
 
 class RecordBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 	permission_required = 'dns.delete_record'

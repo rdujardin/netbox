@@ -7,7 +7,6 @@
     {% for record in selected_objects %}
         <tr>
             <td><a href="{% url 'dns:record' pk=record.pk %}">{{ record.name }}</a></td>
-            <td>{{ record.category }}</td>
             <td>{{ record.record_type }}</td>
             <td>{{ record.priority }}</td>
             <td>{{ record.address }}</td>

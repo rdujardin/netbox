@@ -30,7 +30,6 @@ class ZoneTable(BaseTable):
 class RecordTable(BaseTable):
 	pk = ToggleColumn()
 	name = tables.LinkColumn('dns:record', args=[Accessor('pk')], verbose_name='Name')
-	category = tables.Column(verbose_name='Category')
 	record_type = tables.Column(verbose_name='Type')
 	priority = tables.Column(verbose_name='Priority')
 	address = tables.LinkColumn('ipam:ipaddress', args=[Accessor('address.pk')], verbose_name='IP Address')
@@ -39,16 +38,15 @@ class RecordTable(BaseTable):
 
 	class Meta(BaseTable.Meta):
 		model=Record
-		fields = ('pk', 'name', 'category', 'record_type', 'priority', 'address', 'value')
+		fields = ('pk', 'name', 'record_type', 'priority', 'address', 'value')
 
 class RecordBriefTable(BaseTable):
 	name = tables.LinkColumn('dns:record', args=[Accessor('pk')], verbose_name='Name')
-	category = tables.Column(verbose_name='Category')
 	record_type = tables.Column(verbose_name='Type')
 	priority = tables.Column(verbose_name='Priority')
 	zone = tables.LinkColumn('dns:zone', args=[Accessor('zone.pk')], verbose_name='Zone')
 
 	class Meta(BaseTable.Meta):
 		model=Record
-		fields = ('name', 'category', 'record_type', 'priority', 'zone')
+		fields = ('name', 'record_type', 'priority', 'zone')
 		
