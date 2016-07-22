@@ -8,8 +8,11 @@ from django.db import models
 
 from dcim.models import Interface
 from utilities.models import CreatedUpdatedModel
+import dns.models
 
 from .fields import IPNetworkField, IPAddressField
+
+import time, ipaddress
 
 
 AF_CHOICES = (
@@ -233,9 +236,20 @@ class Prefix(CreatedUpdatedModel):
                              verbose_name='VLAN')
     status = models.PositiveSmallIntegerField('Status', choices=PREFIX_STATUS_CHOICES, default=1)
     role = models.ForeignKey('Role', related_name='prefixes', on_delete=models.SET_NULL, blank=True, null=True)
-    description = models.CharField(max_length=100, blank=True)
 
     objects = PrefixQuerySet.as_manager()
+
+    #Reverse DNS
+    ttl = models.PositiveIntegerField(blank=True, null=True)
+    soa_name = models.CharField(max_length=100, blank=True)
+    soa_contact = models.CharField(max_length=100, blank=True)
+    soa_serial = models.CharField(max_length=100, blank=True)
+    soa_refresh = models.PositiveIntegerField(blank=True, null=True)
+    soa_retry = models.PositiveIntegerField(blank=True, null=True)
+    soa_expire = models.PositiveIntegerField(blank=True, null=True)
+    soa_minimum = models.PositiveIntegerField(blank=True, null=True)
+
+    description = models.CharField(max_length=100, blank=True)
 
     class Meta:
         ordering = ['family', 'prefix']
@@ -257,12 +271,31 @@ class Prefix(CreatedUpdatedModel):
                                   "instead.")
 
     def save(self, *args, **kwargs):
+        self.update_serial()
         if self.prefix:
             # Clear host bits from prefix
             self.prefix = self.prefix.cidr
             # Infer address family from IPNetwork object
             self.family = self.prefix.version
         super(Prefix, self).save(*args, **kwargs)
+
+    def update_serial(self):
+        """
+        Each time a record or the zone is modified, the serial is incremented.
+        """
+        current_date = time.strftime('%Y%m%d',time.localtime())
+        if not self.soa_serial:
+            self.soa_serial = current_date+'1'
+        else:
+            serial_date = self.soa_serial[:8]
+            serial_num = self.soa_serial[8:]
+            
+            if serial_date!=current_date:
+                self.soa_serial = current_date+'1'
+            else:
+                serial_num = int(serial_num)
+                serial_num += 1
+                self.soa_serial = current_date + str(serial_num)
 
     def to_csv(self):
         return ','.join([
@@ -287,6 +320,92 @@ class Prefix(CreatedUpdatedModel):
 
     def get_status_class(self):
         return STATUS_CHOICE_CLASSES[self.status]
+
+    def to_bind(self,ipaddresses):
+
+        zones = {}
+
+        def header (zone_id): return '\n'.join([
+                            '; '+zone_id,
+                            '; gen from prefix '+str(self.prefix)+' ('+(self.description if self.description else '')+') by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) ',
+                            '',
+                            '$TTL '+str(self.ttl),
+                            self.soa_name.ljust(30)+'    IN    '+'SOA                   '+self.soa_contact+' (',
+                            '    '+self.soa_serial.ljust(30)+' ; serial',
+                            '    '+str(self.soa_refresh).ljust(30)+' ; refresh',
+                            '    '+str(self.soa_retry).ljust(30)+' ; retry',
+                            '    '+str(self.soa_expire).ljust(30)+' ; expire',
+                            '    '+str(self.soa_minimum).ljust(29)+') ; minimum',
+                            '',
+                            '',
+                            '',
+                            '$ORIGIN        '+zone_id,
+                            '',
+                            '',
+                        ])
+
+        if self.prefix.version == 4:
+            pbytes = str(self.prefix).split('/')[0].split('.')
+            pslash = int(str(self.prefix).split('/')[1])
+
+            if pslash > 16:
+                # create /24 zones
+                ztype = 24
+            else:
+                # create /16 zones
+                ztype = 16
+
+            for ip in ipaddresses:
+                ibytes = str(ip.address).split('/')[0].split('.')
+                islash = str(ip.address).split('/')[1]
+
+                if ztype == 24:
+                    zone_id = ibytes[2]+'.'+ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
+                    if not zone_id in zones:
+                        zones[zone_id] = header(zone_id)
+                    zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+
+
+                else:
+                    zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
+                    if not zone_id in zones:
+                        zones[zone_id] = header(zone_id)
+                    zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+
+        else:
+            pfull = str(ipaddress.IPv6Address(str(self.prefix).split('/')[0]).exploded)
+            pnibbles = pfull.split(':')
+            pdigits = pfull.replace(':','')
+            pslash = int(str(self.prefix).split('/')[1])
+
+            ztype = pslash if pslash % 16 == 0 else pslash/16+16
+
+            for ip in ipaddresses:
+                ifull = str(ipaddress.IPv6Address(str(ip.address).split('/')[0]).exploded)
+                inibbles = ifull.split(':')
+                idigits = ifull.replace(':','').reverse
+                islash = int(str(ip.address).split('/')[1])
+
+                pdigitszone = pdigits[:ztype/4].reverse
+                zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
+                if not zone_id in zones:
+                    zones[zone_id] = header(zone_id)
+
+                zones[zone_id] += ('.'.join(idigits[:32-ztype/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+
+
+        for z in zones:
+            z += '\n\n; end '
+
+        ret = []
+        for zid,zc in zones.items():
+            ret.append({
+                'num': len(ret),
+                'id': zid,
+                'content': zc,
+            })
+
+        return ret
 
 
 class IPAddress(CreatedUpdatedModel):
@@ -341,6 +460,9 @@ class IPAddress(CreatedUpdatedModel):
         if self.address:
             # Infer address family from IPAddress object
             self.family = self.address.version
+        dns_records = dns.models.Record.objects.filter(address=self)
+        for r in dns_records:
+            r.save()
         super(IPAddress, self).save(*args, **kwargs)
 
     def to_csv(self):

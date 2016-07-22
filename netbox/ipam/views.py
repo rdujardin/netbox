@@ -276,8 +276,14 @@ def prefix(request, pk):
     except Aggregate.DoesNotExist:
         aggregate = None
 
+    child_ip = IPAddress.objects.filter(address__net_contained_or_equal=str(prefix.prefix))
+
     # Count child IP addresses
-    ipaddress_count = IPAddress.objects.filter(address__net_contained_or_equal=str(prefix.prefix)).count()
+    ipaddress_count = child_ip.count()
+
+    # BIND reverse export
+    bind_export = prefix.to_bind(child_ip)
+    bind_export_count = len(bind_export)
 
     # Parent prefixes table
     parent_prefixes = Prefix.objects.filter(vrf=prefix.vrf, prefix__net_contains=str(prefix.prefix))\
@@ -307,6 +313,8 @@ def prefix(request, pk):
         'parent_prefix_table': parent_prefix_table,
         'child_prefix_table': child_prefix_table,
         'duplicate_prefix_table': duplicate_prefix_table,
+        'bind_export': bind_export,
+        'bind_export_count': bind_export_count,
     })
 
 
@@ -481,7 +489,10 @@ class IPAddressBulkEditView(PermissionRequiredMixin, BulkEditView):
             if form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
 
-        return self.cls.objects.filter(pk__in=pk_list).update(**fields_to_update)
+        iplist = self.cls.objects.filter(pk__in=pk_list)
+        for ip in iplist:
+            ip.save() # in order to update dns zones serials
+        return iplist.update(**fields_to_update)
 
 
 class IPAddressBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
