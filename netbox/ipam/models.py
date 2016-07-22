@@ -373,7 +373,7 @@ class Prefix(CreatedUpdatedModel):
                     zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
         else:
-            pfull = str(ipaddress.IPv6Address(str(self.prefix).split('/')[0]).exploded)
+            pfull = str(ipaddress.IPv6Address(unicode(str(self.prefix).split('/')[0])).exploded)
             pnibbles = pfull.split(':')
             pdigits = pfull.replace(':','')
             pslash = int(str(self.prefix).split('/')[1])
