@@ -9,6 +9,9 @@ from utilities.models import CreatedUpdatedModel
 
 import time
 
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+
 class Zone(CreatedUpdatedModel):
 	"""
 	A Zone represents a DNS zone. It contains SOA data but no records, records are represented as Record objects.
@@ -125,11 +128,6 @@ class Record(CreatedUpdatedModel):
 		self.zone.save() # in order to update serial.
 		super(Record, self).save(*args, **kwargs)
 
-	#POST_DELETE RECEIVER !!!
-	def delete(self, *args, **kwargs):
-		self.zone.save() # in order to update serial.
-		super(Record, self).delete(*args, **kwargs)
-
 	def to_csv(self):
 		return ','.join([
 			self.zone.name,
@@ -153,5 +151,9 @@ class Record(CreatedUpdatedModel):
 			'  ',
 			' ; '+self.description+' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) '
 		])
+
+@receiver(pre_delete, sender=Record)
+def on_record_delete(sender, **kwargs):
+	kwargs['instance'].zone.save()
 
 
