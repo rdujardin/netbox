@@ -383,10 +383,10 @@ class Prefix(CreatedUpdatedModel):
             for ip in ipaddresses:
                 ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
                 inibbles = ifull.split(':')
-                idigits = ifull.replace(':','').reverse
+                idigits = ifull.replace(':','')[::-1]
                 islash = int(str(ip.address).split('/')[1])
 
-                pdigitszone = pdigits[:ztype/4].reverse
+                pdigitszone = pdigits[:ztype/4][::-1]
                 zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
                 if not zone_id in zones:
                     zones[zone_id] = header(zone_id)
