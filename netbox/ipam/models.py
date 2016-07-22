@@ -381,7 +381,7 @@ class Prefix(CreatedUpdatedModel):
             ztype = pslash if pslash % 16 == 0 else pslash/16+16
 
             for ip in ipaddresses:
-                ifull = str(ipaddress.IPv6Address(str(ip.address).split('/')[0]).exploded)
+                ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
                 inibbles = ifull.split(':')
                 idigits = ifull.replace(':','').reverse
                 islash = int(str(ip.address).split('/')[1])
