@@ -361,21 +361,22 @@ class Prefix(CreatedUpdatedModel):
 
             ipaddresses = IPAddress.objects.filter(family=4)
             for ip in ipaddresses:
-                ibytes = str(ip.address).split('/')[0].split('.')
-                islash = str(ip.address).split('/')[1]
-                i = netaddr.IPAddress(unicode('.'.join(ibytes)))
+                if ip.hostname:
+                    ibytes = str(ip.address).split('/')[0].split('.')
+                    islash = str(ip.address).split('/')[1]
+                    i = netaddr.IPAddress(unicode('.'.join(ibytes)))
 
-                if i in p:
-                    if zslash == 24:
-                        zone_id = ibytes[2] + '.' + ibytes[1] + '.' + ibytes[0] + '.in-addr.arpa.'
-                        if not zone_id in zones:
-                            zones[zone_id] = header(zone_id)
-                        zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
-                    else:
-                        zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
-                        if not zone_id in zones:
-                            zones[zone_id] = header(zone_id)
-                        zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                    if i in p:
+                        if zslash == 24:
+                            zone_id = ibytes[2] + '.' + ibytes[1] + '.' + ibytes[0] + '.in-addr.arpa.'
+                            if not zone_id in zones:
+                                zones[zone_id] = header(zone_id)
+                            zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                        else:
+                            zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
+                            if not zone_id in zones:
+                                zones[zone_id] = header(zone_id)
+                            zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
             
 
@@ -388,17 +389,18 @@ class Prefix(CreatedUpdatedModel):
             zslash = pslash if pslash % 16 == 0 else pslash/16+16
 
             for ip in ipaddresses:
-                ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
-                inibbles = ifull.split(':')
-                idigits = ifull.replace(':','')[::-1]
-                islash = int(str(ip.address).split('/')[1])
+                if ip.hostname:
+                    ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
+                    inibbles = ifull.split(':')
+                    idigits = ifull.replace(':','')[::-1]
+                    islash = int(str(ip.address).split('/')[1])
 
-                pdigitszone = pdigits[:zslash/4][::-1]
-                zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
-                if not zone_id in zones:
-                    zones[zone_id] = header(zone_id)
+                    pdigitszone = pdigits[:zslash/4][::-1]
+                    zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
+                    if not zone_id in zones:
+                        zones[zone_id] = header(zone_id)
 
-                zones[zone_id] += ('.'.join(idigits[:32-zslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                    zones[zone_id] += ('.'.join(idigits[:32-zslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
 
         for z in zones:
