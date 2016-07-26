@@ -170,6 +170,8 @@
                                 <li><a href="{% url 'dns:zone_add' %}"><i class="glyphicon glyphicon-plus" aria-hidden="true"></i> Add a zone</a></li>
                                 <li><a href="{% url 'dns:zone_import' %}"><i class="glyphicon glyphicon-import" aria-hidden="true"></i> Import zones</a></li>
                             {% endif %}
+                            <li class="divider"></li>
+                            <li><a href="{% url 'dns:full_reverse' %}"><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Full Reverse Export</a></li>
                         </ul>
                     </li>
                     <li class="dropdown{% if request.path|startswith:'/ipam/vlan' %} active{% endif %}">

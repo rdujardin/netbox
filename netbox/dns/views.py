@@ -5,7 +5,7 @@ from django.db.models import Count
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 
-from ipam.models import IPAddress
+from ipam.models import IPAddress, Prefix
 from utilities.paginator import EnhancedPaginator
 from utilities.views import (
 	BulkDeleteView, BulkEditView, BulkImportView, ObjectDeleteView, ObjectEditView, ObjectListView,
@@ -159,3 +159,33 @@ class RecordBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 	cls = Record
 	form = forms.RecordBulkEditForm
 	default_redirect_url = 'dns:record_list'
+
+#
+# Full Reverse
+#
+
+def full_reverse(request):
+
+	zones = {}
+
+	prefixes = Prefix.objects.all()
+
+	for p in prefixes:
+		child_ip = IPAddress.objects.filter(address__net_contained_or_equal=str(p.prefix))
+		z = p.to_bind(child_ip)
+		for zz in z:
+			if not zz['id'] in zones:
+				zones[zz['id']] = zz['content']
+
+	zones_list = []
+	for zid,zc in zones.items():
+		zones_list.append({
+			'num': len(zones_list),
+			'id': zid,
+			'content': zc,
+		})
+
+	return render(request, 'dns/full_reverse.html', {
+		'zones': zones_list,
+		'bind_export_count': len(zones_list),
+	})

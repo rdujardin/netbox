@@ -1,0 +1,48 @@
+{% extends '_base.html' %}
+{% load render_table from django_tables2 %}
+
+{% block title %}Full Reverse DNS{% endblock %}
+
+{% block content %}
+<h1>Full Reverse DNS</h1>
+<div class="row">
+    <div class="col-md-12">
+        {% for z in zones %}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong class="text-md-left">{{ z.id }}</strong>
+                    <a class="pull-right" id="bind_export_select_{{ z.num }}" href="#">Select</a>
+                </div>
+                <table class="table table-hover panel-body">
+                    <tr><td>
+                        <pre id="bind_export_{{ z.num }}" style="overflow: auto;">{{ z.content }}</pre>
+                    </td></tr>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+    for(var i=0;i<{{ bind_export_count }};i++) {
+        $('#bind_export_select_'+i).click(function(e){
+            var i_str = $(this).attr('id');
+            i_str = i_str.substr(i_str.lastIndexOf('_')+1);
+            e.preventDefault();
+            if(document.selection) {
+                var range = document.body.createTextRange();
+                var id='bind_export_'+i_str;
+                range.moveToElementText(document.getElementById(id));
+                range.select();
+            }
+            else if(window.getSelection) {
+                var range = document.createRange();
+                var id='bind_export_'+i_str;
+                range.selectNode(document.getElementById(id));
+                window.getSelection().addRange(range);
+            }
+        });
+    }
+</script>
+{% endblock %}
