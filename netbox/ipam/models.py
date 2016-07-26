@@ -350,9 +350,16 @@ class Prefix(CreatedUpdatedModel):
             pslash = int(str(self.prefix).split('/')[1])
 
             if pslash > 16:
+                pbytes[3]='0'
                 zslash = 24
+                largerPrefix = Prefix.objects.filter(family=4, prefix__net_contains_or_equals=pbytes[0]+'.'+pbytes[1]+'.0.0/16')
+                if largerPrefix:
+                    pbytes[2]='0'
+                    zslash = 16
             else:
+                pbytes[2]='0'
                 zslash = 16
+
 
             if pslash > zslash:
                 pslash = zslash
@@ -387,6 +394,18 @@ class Prefix(CreatedUpdatedModel):
             pslash = int(str(self.prefix).split('/')[1])
 
             zslash = pslash if pslash % 16 == 0 else pslash/16+16
+            pnibbles = pnibbles[:zslash/16] + ['0000'] * (8 - zslash/16)
+
+            largerPrefix = Prefix.objects.filter(family=6, prefix__net_contains_or_equals=':'.join(pnibbles)+'/'+str(zslash))
+            if largerPrefix:
+                #choper le plus grand
+                minSlash = 128
+                for pp in largerPrefix:
+                    ppslash = int(str(pp.prefix).split('/')[1])
+                    if ppslash < minSlash:
+                        minSlash = ppslash
+                zslash = minSlash
+                pnibbles = pnibbles[:zslash/16] + ['0000'] * (8 - zslash/16)
 
             for ip in ipaddresses:
                 if ip.hostname:
