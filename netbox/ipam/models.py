@@ -386,28 +386,19 @@ class Prefix(CreatedUpdatedModel):
             pslash = int(str(self.prefix).split('/')[1])
 
             zslash = pslash if pslash % 16 == 0 else pslash/16+16
-            if pslash > zslash:
-                pslash = zslash
 
-            p = IPNetwork(unicode(pfull+'/'+str(pslash)))
-
-            ipaddresses = IPAddress.objects.filter(family=6)
             for ip in ipaddresses:
                 ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
                 inibbles = ifull.split(':')
                 idigits = ifull.replace(':','')[::-1]
                 islash = int(str(ip.address).split('/')[1])
 
-                i = netaddr.IPAddress(unicode(ifull))
+                pdigitszone = pdigits[:zslash/4][::-1]
+                zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
+                if not zone_id in zones:
+                    zones[zone_id] = header(zone_id)
 
-                if i in p:
-
-                    pdigitszone = pdigits[:pslash/4][::-1]
-                    zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
-                    if not zone_id in zones:
-                        zones[zone_id] = header(zone_id)
-
-                    zones[zone_id] += ('.'.join(idigits[:32-pslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                zones[zone_id] += ('.'.join(idigits[:32-zslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
 
         for z in zones:
