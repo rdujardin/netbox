@@ -13,6 +13,7 @@ import dns.models
 from .fields import IPNetworkField, IPAddressField
 
 import time, ipaddress
+import netaddr
 
 
 AF_CHOICES = (
@@ -349,28 +350,34 @@ class Prefix(CreatedUpdatedModel):
             pslash = int(str(self.prefix).split('/')[1])
 
             if pslash > 16:
-                # create /24 zones
-                ztype = 24
+                zslash = 24
             else:
-                # create /16 zones
-                ztype = 16
+                zslash = 16
 
+            if pslash > zslash:
+                pslash = zslash
+
+            p = IPNetwork(unicode('.'.join(pbytes)+'/'+str(pslash)))
+
+            ipaddresses = IPAddress.objects.filter(family=4)
             for ip in ipaddresses:
                 ibytes = str(ip.address).split('/')[0].split('.')
                 islash = str(ip.address).split('/')[1]
+                i = netaddr.IPAddress(unicode('.'.join(ibytes)))
 
-                if ztype == 24:
-                    zone_id = ibytes[2]+'.'+ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
-                    if not zone_id in zones:
-                        zones[zone_id] = header(zone_id)
-                    zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                if i in p:
+                    if zslash == 24:
+                        zone_id = ibytes[2] + '.' + ibytes[1] + '.' + ibytes[0] + '.in-addr.arpa.'
+                        if not zone_id in zones:
+                            zones[zone_id] = header(zone_id)
+                        zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                    else:
+                        zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
+                        if not zone_id in zones:
+                            zones[zone_id] = header(zone_id)
+                        zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
-
-                else:
-                    zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
-                    if not zone_id in zones:
-                        zones[zone_id] = header(zone_id)
-                    zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+            
 
         else:
             pfull = str(ipaddress.IPv6Address(unicode(str(self.prefix).split('/')[0])).exploded)
@@ -378,20 +385,29 @@ class Prefix(CreatedUpdatedModel):
             pdigits = pfull.replace(':','')
             pslash = int(str(self.prefix).split('/')[1])
 
-            ztype = pslash if pslash % 16 == 0 else pslash/16+16
+            zslash = pslash if pslash % 16 == 0 else pslash/16+16
+            if pslash > zslash:
+                pslash = zslash
 
+            p = IPNetwork(unicode(pfull+'/'+str(pslash)))
+
+            ipaddresses = IPAddress.objects.filter(family=6)
             for ip in ipaddresses:
                 ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
                 inibbles = ifull.split(':')
                 idigits = ifull.replace(':','')[::-1]
                 islash = int(str(ip.address).split('/')[1])
 
-                pdigitszone = pdigits[:ztype/4][::-1]
-                zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
-                if not zone_id in zones:
-                    zones[zone_id] = header(zone_id)
+                i = netaddr.IPAddress(unicode(ifull))
 
-                zones[zone_id] += ('.'.join(idigits[:32-ztype/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                if i in p:
+
+                    pdigitszone = pdigits[:pslash/4][::-1]
+                    zone_id = '.'.join(pdigitszone)+'.ip6.arpa.'
+                    if not zone_id in zones:
+                        zones[zone_id] = header(zone_id)
+
+                    zones[zone_id] += ('.'.join(idigits[:32-pslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
 
         for z in zones:
