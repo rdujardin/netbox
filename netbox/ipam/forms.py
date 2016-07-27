@@ -149,7 +149,16 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = Prefix
-        fields = ['prefix', 'vrf', 'site', 'vlan', 'status', 'role', 'description']
+        fields = ['prefix', 'vrf', 'site', 'vlan', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
+        labels = {
+            'ttl': 'Rev. DNS - TTL',
+            'soa_name': 'Rev. DNS - SOA Name',
+            'soa_contact': 'Rev. DNS - SOA Contact',
+            'soa_refresh': 'Rev. DNS - SOA Refresh',
+            'soa_retry': 'Rev. DNS - SOA Retry',
+            'soa_expire': 'Rev. DNS - SOA Expire',
+            'soa_minimum': 'Rev. DNS - SOA Minimum',
+        }
         help_texts = {
             'prefix': "IPv4 or IPv6 network",
             'vrf': "VRF (if applicable)",
@@ -157,6 +166,13 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
             'vlan': "The VLAN to which this prefix is assigned (if applicable)",
             'status': "Operational status of this prefix",
             'role': "The primary function of this prefix",
+            'ttl': "Time to live, in seconds",
+            'soa_name': "The primary name server for the domain, @ for origin",
+            'soa_contact': "The responsible party for the zone (e.g. ns.foo.net. noc.foo.net.)",
+            'soa_refresh': "Refresh time, in seconds",
+            'soa_retry': "Retry time, in seconds",
+            'soa_expire': "Expire time, in seconds",
+            'soa_minimum': "Negative result TTL, in seconds",
         }
 
     def __init__(self, *args, **kwargs):
@@ -200,7 +216,7 @@ class PrefixFromCSVForm(forms.ModelForm):
 
     class Meta:
         model = Prefix
-        fields = ['prefix', 'vrf', 'site', 'vlan_group_name', 'vlan_vid', 'status_name', 'role', 'description']
+        fields = ['prefix', 'vrf', 'site', 'vlan_group_name', 'vlan_vid', 'status_name', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
 
     def clean(self):
 
@@ -252,6 +268,14 @@ class PrefixBulkEditForm(forms.Form, BootstrapMixin):
     status = forms.ChoiceField(choices=FORM_PREFIX_STATUS_CHOICES, required=False)
     role = forms.ModelChoiceField(queryset=Role.objects.all(), required=False)
     description = forms.CharField(max_length=50, required=False)
+
+    ttl = forms.IntegerField(required=False, label='Reverse DNS - TTL')
+    soa_name = forms.CharField(max_length=100, required=False, label='Reverse DNS - SOA Name')
+    soa_contact = forms.CharField(max_length=100, required=False, label='Reverse DNS - SOA Contact')
+    soa_refresh = forms.IntegerField(required=False, label='Reverse DNS - SOA Refresh')
+    soa_retry = forms.IntegerField(required=False, label='Reverse DNS - SOA Retry')
+    soa_expire = forms.IntegerField(required=False, label='Reverse DNS - SOA Expire')
+    soa_minimum = forms.IntegerField(required=False, label='Reverse DNS - SOA Minimum')
 
 
 class PrefixBulkDeleteForm(ConfirmationForm):

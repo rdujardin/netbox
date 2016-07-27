@@ -36,7 +36,7 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
 			'soa_refresh': "Refresh time, in seconds",
 			'soa_retry': "Retry time, in seconds",
 			'soa_expire': "Expire time, in seconds",
-			'soa_minimum': "Negative result TTL, in seconds"
+			'soa_minimum': "Negative result TTL, in seconds",
 		}
 
 class ZoneFromCSVForm(forms.ModelForm):

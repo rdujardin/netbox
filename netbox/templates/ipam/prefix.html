@@ -81,6 +81,38 @@
                     <td><a href="{% url 'ipam:prefix_ipaddresses' pk=prefix.pk %}">{{ ipaddress_count }}</a></td>
                 </tr>
                 <tr>
+                    <td>Reverse DNS - TTL</td>
+                    <td>{{ zone.ttl }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Name</td>
+                    <td>{{ zone.soa_name }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Contact</td>
+                    <td>{{ zone.soa_contact }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Serial</td>
+                    <td>{{ zone.soa_serial }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Refresh</td>
+                    <td>{{ zone.soa_refresh }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Retry</td>
+                    <td>{{ zone.soa_retry }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Expire</td>
+                    <td>{{ zone.soa_expire }}</td>
+                </tr>
+                <tr>
+                    <td>Reverse DNS - SOA Minimum</td>
+                    <td>{{ zone.soa_minimum }}</td>
+                </tr>
+                <tr>
                     <td>Created</td>
                     <td>{{ prefix.created }}</td>
                 </tr>

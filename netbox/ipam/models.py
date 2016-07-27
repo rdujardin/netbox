@@ -306,6 +306,14 @@ class Prefix(CreatedUpdatedModel):
             self.get_status_display(),
             self.role.name if self.role else '',
             self.description,
+            self.ttl if self.ttl else '',
+            self.soa_name if self.soa_name else '',
+            self.soa_contact if self.soa_contact else '',
+            self.soa_serial if self.soa_serial else '',
+            self.soa_refresh if self.soa_refresh else '',
+            self.soa_retry if self.soa_retry else '',
+            self.soa_expire if self.soa_expire else '',
+            self.soa_minimum if self.soa_minimum else '',
         ])
 
     @property
