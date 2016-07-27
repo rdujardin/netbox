@@ -335,11 +335,11 @@ class IPAddressForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = IPAddress
-        fields = ['address', 'vrf', 'hostname', 'nat_device', 'nat_inside', 'description']
+        fields = ['address', 'vrf', 'ptr', 'nat_device', 'nat_inside', 'description']
         help_texts = {
             'address': "IPv4 or IPv6 address and mask",
             'vrf': "VRF (if applicable)",
-            'hostname': "Reverse DNS host name",
+            'ptr': "Reverse DNS name",
         }
 
     def __init__(self, *args, **kwargs):
@@ -392,7 +392,7 @@ class IPAddressFromCSVForm(forms.ModelForm):
 
     class Meta:
         model = IPAddress
-        fields = ['address', 'vrf', 'hostname', 'device', 'interface_name', 'is_primary', 'description']
+        fields = ['address', 'vrf', 'ptr', 'device', 'interface_name', 'is_primary', 'description']
 
     def clean(self):
 
@@ -439,7 +439,7 @@ class IPAddressBulkEditForm(forms.Form, BootstrapMixin):
     pk = forms.ModelMultipleChoiceField(queryset=IPAddress.objects.all(), widget=forms.MultipleHiddenInput)
     vrf = forms.ModelChoiceField(queryset=VRF.objects.all(), required=False, label='VRF',
                                  help_text="Select the VRF to assign, or check below to remove VRF assignment")
-    hostname = forms.CharField(max_length=100, required=False)
+    ptr = forms.CharField(max_length=100, required=False, label='PTR')
     vrf_global = forms.BooleanField(required=False, label='Set VRF to global')
     description = forms.CharField(max_length=50, required=False)
 

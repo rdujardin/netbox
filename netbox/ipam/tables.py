@@ -160,7 +160,7 @@ class IPAddressTable(BaseTable):
     pk = ToggleColumn()
     address = tables.LinkColumn('ipam:ipaddress', args=[Accessor('pk')], verbose_name='IP Address')
     vrf = tables.Column(orderable=False, default='Global', verbose_name='VRF')
-    hostname = tables.Column(verbose_name='Host Name')
+    ptr = tables.Column(verbose_name='PTR')
     device = tables.LinkColumn('dcim:device', args=[Accessor('interface.device.pk')], orderable=False,
                                verbose_name='Device')
     interface = tables.Column(orderable=False, verbose_name='Interface')
@@ -168,7 +168,7 @@ class IPAddressTable(BaseTable):
 
     class Meta(BaseTable.Meta):
         model = IPAddress
-        fields = ('pk', 'address', 'vrf', 'hostname', 'device', 'interface', 'description')
+        fields = ('pk', 'address', 'vrf', 'ptr', 'device', 'interface', 'description')
 
 
 class IPAddressBriefTable(BaseTable):

@@ -376,7 +376,7 @@ class Prefix(CreatedUpdatedModel):
 
             ipaddresses = IPAddress.objects.filter(family=4)
             for ip in ipaddresses:
-                if ip.hostname:
+                if ip.ptr:
                     ibytes = str(ip.address).split('/')[0].split('.')
                     islash = str(ip.address).split('/')[1]
                     i = netaddr.IPAddress(unicode('.'.join(ibytes)))
@@ -386,12 +386,12 @@ class Prefix(CreatedUpdatedModel):
                             zone_id = ibytes[2] + '.' + ibytes[1] + '.' + ibytes[0] + '.in-addr.arpa.'
                             if not zone_id in zones:
                                 zones[zone_id] = header(zone_id)
-                            zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                            zones[zone_id] += ibytes[3].ljust(3) + '        IN PTR        ' + ip.ptr.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
                         else:
                             zone_id = ibytes[1]+'.'+ibytes[0]+'.in-addr.arpa.'
                             if not zone_id in zones:
                                 zones[zone_id] = header(zone_id)
-                            zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                            zones[zone_id] += (ibytes[3]+'.'+ibytes[2]).ljust(7) + '        IN PTR        ' + ip.ptr.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
             
 
@@ -416,7 +416,7 @@ class Prefix(CreatedUpdatedModel):
                 pnibbles = pnibbles[:zslash/16] + ['0000'] * (8 - zslash/16)
 
             for ip in ipaddresses:
-                if ip.hostname:
+                if ip.ptr:
                     ifull = str(ipaddress.IPv6Address(unicode(str(ip.address).split('/')[0])).exploded)
                     inibbles = ifull.split(':')
                     idigits = ifull.replace(':','')[::-1]
@@ -427,7 +427,7 @@ class Prefix(CreatedUpdatedModel):
                     if not zone_id in zones:
                         zones[zone_id] = header(zone_id)
 
-                    zones[zone_id] += ('.'.join(idigits[:32-zslash/4])).ljust(30)+'        IN PTR        ' + ip.hostname.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
+                    zones[zone_id] += ('.'.join(idigits[:32-zslash/4])).ljust(30)+'        IN PTR        ' + ip.ptr.ljust(40) + '    ; ' + ip.description.ljust(20) + ' ; gen by netbox ( '+time.strftime('%A %B %d %Y %H:%M:%S',time.localtime())+' ) \n'
 
 
         for z in zones:
@@ -459,7 +459,7 @@ class IPAddress(CreatedUpdatedModel):
     address = IPAddressField()
     vrf = models.ForeignKey('VRF', related_name='ip_addresses', on_delete=models.PROTECT, blank=True, null=True,
                             verbose_name='VRF')
-    hostname = models.CharField(max_length=100, blank=True, verbose_name='Host Name')
+    ptr = models.CharField(max_length=100, blank=True, verbose_name='PTR')
     interface = models.ForeignKey(Interface, related_name='ip_addresses', on_delete=models.CASCADE, blank=True,
                                   null=True)
     nat_inside = models.OneToOneField('self', related_name='nat_outside', on_delete=models.SET_NULL, blank=True,
@@ -513,7 +513,7 @@ class IPAddress(CreatedUpdatedModel):
         return ','.join([
             str(self.address),
             self.vrf.rd if self.vrf else '',
-            self.hostname if self.hostname else '',
+            self.ptr if self.ptr else '',
             self.device.identifier if self.device else '',
             self.interface.name if self.interface else '',
             'True' if is_primary else '',
