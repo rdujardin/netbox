@@ -354,11 +354,14 @@ class PrefixBulkEditView(PermissionRequiredMixin, BulkEditView):
             fields_to_update['vrf'] = form.cleaned_data['vrf']
         elif form.cleaned_data['vrf_global']:
             fields_to_update['vrf'] = None
-        for field in ['site', 'status', 'role', 'description']:
+        for field in ['site', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']:
             if form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
 
-        return self.cls.objects.filter(pk__in=pk_list).update(**fields_to_update)
+        plist = self.cls.objects.filter(pk__in=pk_list)
+        for p in plist:
+            p.save()
+        return plist.update(**fields_to_update)
 
 
 class PrefixBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
@@ -484,13 +487,13 @@ class IPAddressBulkEditView(PermissionRequiredMixin, BulkEditView):
             fields_to_update['vrf'] = form.cleaned_data['vrf']
         elif form.cleaned_data['vrf_global']:
             fields_to_update['vrf'] = None
-        for field in ['description']:
+        for field in ['ptr', 'description']:
             if form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
 
         iplist = self.cls.objects.filter(pk__in=pk_list)
         for ip in iplist:
-            ip.save() # in order to update dns zones serials
+            ip.save()
         return iplist.update(**fields_to_update)
 
 

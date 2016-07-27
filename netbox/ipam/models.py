@@ -493,6 +493,7 @@ class IPAddress(CreatedUpdatedModel):
                 raise ValidationError("Duplicate IP address found in global table: {}".format(duplicate_ips.first()))
 
     def save(self, *args, **kwargs):
+        self.update_dns()
         if self.address:
             # Infer address family from IPAddress object
             self.family = self.address.version
@@ -500,6 +501,31 @@ class IPAddress(CreatedUpdatedModel):
         for r in dns_records:
             r.save()
         super(IPAddress, self).save(*args, **kwargs)
+
+    def update_dns(self):
+        """Auto-create a corresponding A/AAAA DNS record (if possible) whenever the PTR field is modified"""
+        if self.ptr:
+            which_zone = None
+            zones = dns.models.Zone.objects.all()
+            for zone in zones:
+                if self.ptr.endswith(zone.name):
+                    which_zone = zone
+                    break
+
+            if which_zone:
+                zone_name = which_zone.name
+                record_name = self.ptr[:-len(zone_name)]
+                if record_name.endswith('.'):
+                    record_name = record_name[:-1]
+                record_type = 'A' if self.family==4 else 'AAAA'
+
+                dns.models.Record.objects.get_or_create(
+                    name = record_name,
+                    record_type = record_type,
+                    zone = which_zone,
+                    address = self,
+                    description = 'gen by netbox'
+                ) 
 
     def to_csv(self):
 
