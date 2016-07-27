@@ -13,6 +13,7 @@ from utilities.views import (
 
 from . import filters, forms, tables
 from .models import Zone, Record
+from .tables import RecordZoneTable
 
 #
 # Zones
@@ -33,6 +34,10 @@ def zone(request, pk):
 	record_count = len(records)
 	bind_export = zone.to_bind(records)
 
+	# DNS records
+	dns_records = Record.objects.filter(zone=zone)
+	dns_records_table = RecordZoneTable(dns_records)
+
 	if request.GET.get('bind_export'):
 		response = HttpResponse(
 			bind_export,
@@ -47,6 +52,7 @@ def zone(request, pk):
 			'zone': zone,
 			'records': records,
 			'record_count': record_count,
+			'dns_records_table': dns_records_table,
 			'bind_export': bind_export,
 		})
 

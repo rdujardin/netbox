@@ -49,4 +49,15 @@ class RecordBriefTable(BaseTable):
 	class Meta(BaseTable.Meta):
 		model=Record
 		fields = ('name', 'record_type', 'priority', 'zone')
+
+class RecordZoneTable(BaseTable):
+	name = tables.LinkColumn('dns:record', args=[Accessor('pk')], verbose_name='Name')
+	record_type = tables.Column(verbose_name='Type')
+	priority = tables.Column(verbose_name='Priority')
+	address = tables.LinkColumn('ipam:ipaddress', args=[Accessor('address.pk')], verbose_name='IP Address')
+	value = tables.Column(verbose_name='Value')
+
+	class Meta(BaseTable.Meta):
+		model=Record
+		fields = ('name', 'record_type', 'priority', 'address', 'value')
 		

@@ -112,45 +112,9 @@
         </div>
 	</div>
 	<div class="col-md-6">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <strong>Records</strong>
-            </div>
-            {% if records %}
-                <table class="table table-hover panel-body">
-                    {% for r in records %}
-                        <tr>
-                            <td>
-                                <a href="{% url 'dns:record' pk=r.pk %}">{{ r }}</a>
-                            </td>
-                            <td>{{ r.record_type }}</td>
-                            <td>
-                                {% if r.priority %}
-                                    {{ r.priority }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if r.address %}
-                                    <a href="{% url 'ipam:ipaddress' pk=r.address.pk %}">{{ r.address }}</a>
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if r.value %}
-                                    {{ r.value }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% else %}
-                <div class="panel-body text-muted">None</div>
-            {% endif %}
-        </div>
+        {% with heading='Records' %}
+            {% render_table dns_records_table 'panel_table.html' %}
+        {% endwith %}
 	</div>
 </div>
 <div class="row">
