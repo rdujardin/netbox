@@ -423,7 +423,6 @@ def ipaddress(request, pk):
     dns_records = Record.objects.filter(address=ipaddress)
     dns_records_table = RecordBriefTable(dns_records)
 
-
     return render(request, 'ipam/ipaddress.html', {
         'ipaddress': ipaddress,
         'parent_prefixes_table': parent_prefixes_table,

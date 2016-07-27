@@ -37,15 +37,15 @@ class RecordFilter(django_filters.FilterSet):
 		lookup_type = 'icontains',
 		label = 'Name',
 	)
-	name_or_value = django_filters.MethodFilter(
-		name = 'name_or_value',
+	name_or_value_or_ip = django_filters.MethodFilter(
+		name = 'name_or_value_or_ip',
 	)
 
 	class Meta:
 		model=Record
 		field = ['name', 'record_type', 'value']
 
-	def filter_name_or_value(self, queryset, value):
+	def filter_name_or_value_or_ip(self, queryset, value):
 		if not value:
 			return queryset
-		return queryset.filter(Q(name__icontains=value) | Q(value__icontains=value))
+		return queryset.filter(Q(name__icontains=value) | Q(value__icontains=value) | Q(address__address__icontains=value))
