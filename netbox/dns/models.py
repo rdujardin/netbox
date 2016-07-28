@@ -12,6 +12,8 @@ import time
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 
+import ipam.models
+
 class Zone(CreatedUpdatedModel):
 	"""
 	A Zone represents a DNS zone. It contains SOA data but no records, records are represented as Record objects.
@@ -168,5 +170,45 @@ class Record(CreatedUpdatedModel):
 @receiver(pre_delete, sender=Record)
 def on_record_delete(sender, **kwargs):
 	kwargs['instance'].zone.save()
+
+#
+# BIND Exports
+#
+
+def export_bind_forward():
+	zones = Zone.objects.all()
+
+	zones_list = []
+	for z in zones:
+		records = Record.objects.filter(zone=z)
+		zones_list.append({
+			'num': len(zones_list),
+			'id': z.name,
+			'content': z.to_bind(records)
+		})
+
+	return zones_list
+
+def export_bind_reverse():
+	zones = {}
+
+	prefixes = ipam.models.Prefix.objects.all()
+
+	for p in prefixes:
+		child_ip = ipam.models.IPAddress.objects.filter(address__net_contained_or_equal=str(p.prefix))
+		z = p.to_bind(child_ip)
+		for zz in z:
+			if not zz['id'] in zones:
+				zones[zz['id']] = zz['content']
+
+	zones_list = []
+	for zid,zc in zones.items():
+		zones_list.append({
+			'num': len(zones_list),
+			'id': zid,
+			'content': zc,
+		})
+
+	return zones_list
 
 

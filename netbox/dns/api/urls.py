@@ -12,4 +12,8 @@ urlpatterns = [
 	url(r'^records/$', RecordListView.as_view(), name='record_list'),
 	url(r'^records/(?P<pk>\d+)/$', RecordDetailView.as_view(), name='record_detail'),
 
+	# BIND Exports
+	url(r'^bind/forward/$', bind_forward, name='bind_forward'),
+	url(r'^bind/reverse/$', bind_reverse, name='bind_reverse'),
+
 ]

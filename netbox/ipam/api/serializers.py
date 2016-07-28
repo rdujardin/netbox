@@ -123,7 +123,7 @@ class PrefixSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Prefix
-        fields = ['id', 'family', 'prefix', 'site', 'vrf', 'vlan', 'status', 'role', 'description']
+        fields = ['id', 'family', 'prefix', 'site', 'vrf', 'vlan', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
 
 
 class PrefixNestedSerializer(PrefixSerializer):
@@ -142,7 +142,7 @@ class IPAddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IPAddress
-        fields = ['id', 'family', 'address', 'vrf', 'hostname', 'interface', 'description', 'nat_inside', 'nat_outside']
+        fields = ['id', 'family', 'address', 'vrf', 'ptr', 'interface', 'description', 'nat_inside', 'nat_outside']
 
 
 class IPAddressNestedSerializer(IPAddressSerializer):

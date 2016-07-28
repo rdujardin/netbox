@@ -9,17 +9,9 @@ from dns.models import Zone, Record
 
 class ZoneSerializer(serializers.ModelSerializer):
 
-	bind_export = serializers.SerializerMethodField()
-
 	class Meta:
 		model=Zone
 		fields = ['id', 'name', 'ttl', 'soa_name', 'soa_contact', 'soa_serial', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
-
-	def get_bind_export(self, obj):
-		records = Record.objects.filter(zone=obj)
-		return {
-			'export': obj.to_bind(records),
-		}
 
 class ZoneNestedSerializer(ZoneSerializer):
 
@@ -35,16 +27,10 @@ class RecordSerializer(serializers.ModelSerializer):
 
 	zone = ZoneNestedSerializer()
 	address = IPAddressNestedSerializer()
-	bind_export = serializers.SerializerMethodField()
 
 	class Meta:
 		model=Record
-		fields = ['id', 'name', 'category', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
-
-	def get_bind_export(self, obj):
-		return {
-			'export': obj.to_bind(),
-		}
+		fields = ['id', 'name', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
 
 class RecordNestedSerializer(RecordSerializer):
 

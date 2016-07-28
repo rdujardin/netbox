@@ -12,7 +12,7 @@ from utilities.views import (
 )
 
 from . import filters, forms, tables
-from .models import Zone, Record
+from .models import Zone, Record, export_bind_forward, export_bind_reverse
 from .tables import RecordZoneTable
 
 import StringIO, zipfile, time
@@ -194,40 +194,8 @@ def bind_export(request, zones_list, context):
 		})
 
 def full_forward(request):
-
-	zones = Zone.objects.all()
-
-	zones_list = []
-	for z in zones:
-		records = Record.objects.filter(zone=z)
-		zones_list.append({
-			'num': len(zones_list),
-			'id': z.name,
-			'content': z.to_bind(records)
-		})
-
-	return bind_export(request, zones_list, 'forward')
+	return bind_export(request, export_bind_forward(), 'forward')
 
 def full_reverse(request):
-
-	zones = {}
-
-	prefixes = Prefix.objects.all()
-
-	for p in prefixes:
-		child_ip = IPAddress.objects.filter(address__net_contained_or_equal=str(p.prefix))
-		z = p.to_bind(child_ip)
-		for zz in z:
-			if not zz['id'] in zones:
-				zones[zz['id']] = zz['content']
-
-	zones_list = []
-	for zid,zc in zones.items():
-		zones_list.append({
-			'num': len(zones_list),
-			'id': zid,
-			'content': zc,
-		})
-
-	return bind_export(request, zones_list, 'reverse')
+	return bind_export(request, export_bind_reverse(), 'reverse')
 
