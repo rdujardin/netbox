@@ -145,6 +145,14 @@
             </div>
             <div class="list-group">
                 <div class="list-group-item">
+                    <h4 class="list-group-item-heading"><a href="{% url 'dns:full_forward' %}">Export Forward</a></h4>
+                    <p class="list-group-item-text text-muted">Export forward zones into Bind format</p>
+                </div>
+                <div class="list-group-item">
+                <h4 class="list-group-item-heading"><a href="{% url 'dns:full_reverse' %}">Export Reverse</a></h4>
+                    <p class="list-group-item-text text-muted">Export reverse zones into Bind format</p>
+                </div>
+                <div class="list-group-item">
                     <span class="badge pull-right">{{ stats.zone_count }}</span>
                     <h4 class="list-group-item-heading"><a href="{% url 'dns:zone_list' %}">Zones</a></h4>
                     <p class="list-group-item-text text-muted">Domain name system zones</p>
