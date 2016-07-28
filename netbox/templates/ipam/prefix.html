@@ -145,47 +145,5 @@
         {% endif %}
     </div>
 </div>
-<div class="row" style="margin-top: 30px;">
-    <div class="col-md-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <strong class="text-md-left">BIND Reverse Exports</strong>
-            </div>
-            <table class="table table-hover panel-body">
-                    {% for z in bind_export %}
-                        <tr><td>
-                            <strong class="text-md-left">{{ z.id }}</strong>
-                            <a class="pull-right" id="bind_export_select_{{ z.num }}" href="#">Select</a>
-                        </td></tr>
-                        <tr><td>
-                            <pre id="bind_export_{{ z.num }}" style="overflow: auto;">{{ z.content }}</pre>
-                        </td></tr>
-                    {% endfor %}
-            </table>
-        </div>
-    </div>
-</div>
 {% endblock %}
-{% block javascript %}
-<script>
-    for(var i=0;i<{{ bind_export_count }};i++) {
-        $('#bind_export_select_'+i).click(function(e){
-            var i_str = $(this).attr('id');
-            i_str = i_str.substr(i_str.lastIndexOf('_')+1);
-            e.preventDefault();
-            if(document.selection) {
-                var range = document.body.createTextRange();
-                var id='bind_export_'+i_str;
-                range.moveToElementText(document.getElementById(id));
-                range.select();
-            }
-            else if(window.getSelection) {
-                var range = document.createRange();
-                var id='bind_export_'+i_str;
-                range.selectNode(document.getElementById(id));
-                window.getSelection().addRange(range);
-            }
-        });
-    }
-</script>
-{% endblock %}
+

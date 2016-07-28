@@ -171,7 +171,8 @@
                                 <li><a href="{% url 'dns:zone_import' %}"><i class="glyphicon glyphicon-import" aria-hidden="true"></i> Import zones</a></li>
                             {% endif %}
                             <li class="divider"></li>
-                            <li><a href="{% url 'dns:full_reverse' %}"><i class="glyphicon glyphicon-search" aria-hidden="true"></i> Full Reverse Export</a></li>
+                            <li><a href="{% url 'dns:full_forward' %}"><i class="glyphicon glyphicon-export" aria-hidden="true"></i> BIND Export Forward</a></li>
+                            <li><a href="{% url 'dns:full_reverse' %}"><i class="glyphicon glyphicon-export" aria-hidden="true"></i> BIND Export Reverse</a></li>
                         </ul>
                     </li>
                     <li class="dropdown{% if request.path|startswith:'/ipam/vlan' %} active{% endif %}">

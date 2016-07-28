@@ -281,10 +281,6 @@ def prefix(request, pk):
     # Count child IP addresses
     ipaddress_count = child_ip.count()
 
-    # BIND reverse export
-    bind_export = prefix.to_bind(child_ip)
-    bind_export_count = len(bind_export)
-
     # Parent prefixes table
     parent_prefixes = Prefix.objects.filter(vrf=prefix.vrf, prefix__net_contains=str(prefix.prefix))\
         .select_related('site', 'role').annotate_depth()
@@ -313,8 +309,6 @@ def prefix(request, pk):
         'parent_prefix_table': parent_prefix_table,
         'child_prefix_table': child_prefix_table,
         'duplicate_prefix_table': duplicate_prefix_table,
-        'bind_export': bind_export,
-        'bind_export_count': bind_export_count,
     })
 
 

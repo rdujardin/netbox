@@ -15,6 +15,8 @@ from . import filters, forms, tables
 from .models import Zone, Record
 from .tables import RecordZoneTable
 
+import StringIO, zipfile, time
+
 #
 # Zones
 #
@@ -32,29 +34,17 @@ def zone(request, pk):
 	zone = get_object_or_404(Zone.objects.all(), pk=pk)
 	records = Record.objects.filter(zone=zone)
 	record_count = len(records)
-	bind_export = zone.to_bind(records)
 
 	# DNS records
 	dns_records = Record.objects.filter(zone=zone)
 	dns_records_table = RecordZoneTable(dns_records)
 
-	if request.GET.get('bind_export'):
-		response = HttpResponse(
-			bind_export,
-			content_type='text/plain'
-		)
-		response['Content-Disposition'] = 'attachment; filename="netbox_{}.txt"'\
-			.format(zone.name)
-		return response
-
-	else: 
-		return render(request, 'dns/zone.html', {
-			'zone': zone,
-			'records': records,
-			'record_count': record_count,
-			'dns_records_table': dns_records_table,
-			'bind_export': bind_export,
-		})
+	return render(request, 'dns/zone.html', {
+		'zone': zone,
+		'records': records,
+		'record_count': record_count,
+		'dns_records_table': dns_records_table,
+	})
 
 class ZoneEditView(PermissionRequiredMixin, ObjectEditView):
 	permission_required = 'dns.change_zone'
@@ -167,8 +157,56 @@ class RecordBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 	default_redirect_url = 'dns:record_list'
 
 #
-# Full Reverse
+# BIND Exports
 #
+
+def bind_export(request, zones_list, context):
+	download = request.GET.get('download')
+	if download:
+		if download == 'all':
+			zbuf = StringIO.StringIO()
+			zfile = zipfile.ZipFile(zbuf, mode='w')
+			temp = []
+			for z in zones_list:
+				temp.append(StringIO.StringIO())
+				temp[len(temp)-1].write(z['content'])
+				zfile.writestr(z['id'],str(temp[len(temp)-1].getvalue()))
+			zfile.close()
+			response = HttpResponse(
+				zbuf.getvalue(),
+				content_type = 'application/zip'
+			)
+			response['Content-Disposition'] = 'attachment; filename="netbox_dns_{}_{}.zip"'.format(context, str(int(time.time())))
+			return response
+		else:
+			response = HttpResponse(
+				zones_list[int(download)]['content'],
+				content_type='text/plain'
+			)
+			response['Content-Disposition'] = 'attachment; filename="{}"'.format(zones_list[int(download)]['id'])
+			return response
+
+	else:
+		return render(request, 'dns/bind_export.html', {
+			'context': context[0].upper() + context[1:],
+			'zones': zones_list,
+			'bind_export_count': len(zones_list),
+		})
+
+def full_forward(request):
+
+	zones = Zone.objects.all()
+
+	zones_list = []
+	for z in zones:
+		records = Record.objects.filter(zone=z)
+		zones_list.append({
+			'num': len(zones_list),
+			'id': z.name,
+			'content': z.to_bind(records)
+		})
+
+	return bind_export(request, zones_list, 'forward')
 
 def full_reverse(request):
 
@@ -191,7 +229,5 @@ def full_reverse(request):
 			'content': zc,
 		})
 
-	return render(request, 'dns/full_reverse.html', {
-		'zones': zones_list,
-		'bind_export_count': len(zones_list),
-	})
+	return bind_export(request, zones_list, 'reverse')
+

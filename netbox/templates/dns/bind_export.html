@@ -1,17 +1,33 @@
 {% extends '_base.html' %}
 {% load render_table from django_tables2 %}
 
-{% block title %}Full Reverse DNS{% endblock %}
+{% block title %}BIND Export {{context}}{% endblock %}
 
 {% block content %}
-<h1>Full Reverse DNS</h1>
+<div class="row">
+    <div class="col-md-12">
+        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}download=all" class="btn btn-success pull-right">
+            <span class="glyphicon glyphicon-export" aria-hidden="true"></span>
+            Download ZIP
+        </a>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h1 style="margin-bottom: 35px;">BIND Export {{context}}</h1>
+    </div>
+</div>
 <div class="row">
     <div class="col-md-12">
         {% for z in zones %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <strong class="text-md-left">{{ z.id }}</strong>
-                    <a class="pull-right" id="bind_export_select_{{ z.num }}" href="#">Select</a>
+                    <span class="pull-right">
+                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}download={{ z.num }}">Download</a>
+                         - 
+                        <a id="bind_export_select_{{ z.num }}" href="#">Select</a>
+                    </span>
                 </div>
                 <table class="table table-hover panel-body">
                     <tr><td>

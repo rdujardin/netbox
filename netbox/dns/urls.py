@@ -24,7 +24,8 @@ urlpatterns = [
 	url(r'^records/(?P<pk>\d+)/edit/$', views.RecordEditView.as_view(), name='record_edit'),
 	url(r'^records/(?P<pk>\d+)/delete/$', views.RecordDeleteView.as_view(), name='record_delete'),
 
-	# Full Reverse
-	url(r'^reverse/$', views.full_reverse, name='full_reverse'),
+	# BIND Exports
+	url(r'^bind/forward/$', views.full_forward, name='full_forward'),
+	url(r'^bind/reverse/$', views.full_reverse, name='full_reverse'),
 
 ]
