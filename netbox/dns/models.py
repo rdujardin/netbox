@@ -20,7 +20,10 @@ class Zone(CreatedUpdatedModel):
 	ttl = models.PositiveIntegerField()
 	soa_name = models.CharField(max_length=100)
 	soa_contact = models.CharField(max_length=100)
-	soa_serial = models.CharField(max_length=100)
+
+	soa_serial = models.CharField(max_length=10)
+	bind_changed = models.BooleanField(default=True)
+
 	soa_refresh = models.PositiveIntegerField()
 	soa_retry = models.PositiveIntegerField()
 	soa_expire = models.PositiveIntegerField()
@@ -37,8 +40,12 @@ class Zone(CreatedUpdatedModel):
 		return reverse('dns:zone', args=[self.pk])
 
 	def save(self, *args, **kwargs):
-		self.update_serial()
+		self.bind_changed = True
 		super(Zone, self).save(*args, **kwargs)
+
+	def set_bind_changed(self, value):
+		self.bind_changed = value
+		super(Zone, self).save()
 
 	def update_serial(self):
 		"""
@@ -46,17 +53,21 @@ class Zone(CreatedUpdatedModel):
 		"""
 		current_date = time.strftime('%Y%m%d',time.localtime())
 		if not self.soa_serial:
-			self.soa_serial = current_date+'1'
+			self.soa_serial = current_date+'01'
 		else:
 			serial_date = self.soa_serial[:8]
 			serial_num = self.soa_serial[8:]
 			
 			if serial_date!=current_date:
-				self.soa_serial = current_date+'1'
+				self.soa_serial = current_date+'01'
 			else:
 				serial_num = int(serial_num)
 				serial_num += 1
-				self.soa_serial = current_date + str(serial_num)
+				if serial_num<10:
+					self.soa_serial = current_date + '0' + str(serial_num)
+				else:
+					self.soa_serial = current_date + str(serial_num)
+		self.set_bind_changed(False)
 
 
 	def to_csv(self):
@@ -74,6 +85,8 @@ class Zone(CreatedUpdatedModel):
 		])
 
 	def to_bind(self,records):
+		if self.bind_changed:
+			self.update_serial()
 		bind_records = ''
 		for r in records:
 			bind_records += r.to_bind()+'\n'

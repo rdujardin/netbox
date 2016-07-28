@@ -360,7 +360,7 @@ class PrefixBulkEditView(PermissionRequiredMixin, BulkEditView):
 
         plist = self.cls.objects.filter(pk__in=pk_list)
         for p in plist:
-            p.save()
+            p.set_bind_changed(True)
         return plist.update(**fields_to_update)
 
 

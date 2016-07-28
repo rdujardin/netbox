@@ -91,7 +91,7 @@ class ZoneBulkEditView(PermissionRequiredMixin, BulkEditView):
 
 		zlist = self.cls.objects.filter(pk__in=pk_list)
 		for z in zlist:
-			z.save()
+			z.set_bind_changed(True)
 		return zlist.update(**fields_to_update)
 
 

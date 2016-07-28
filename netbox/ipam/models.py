@@ -244,7 +244,10 @@ class Prefix(CreatedUpdatedModel):
     ttl = models.PositiveIntegerField(blank=True, null=True)
     soa_name = models.CharField(max_length=100, blank=True)
     soa_contact = models.CharField(max_length=100, blank=True)
-    soa_serial = models.CharField(max_length=100, blank=True)
+
+    soa_serial = models.CharField(max_length=10, blank=True)
+    bind_changed = models.BooleanField(default=True)
+
     soa_refresh = models.PositiveIntegerField(blank=True, null=True)
     soa_retry = models.PositiveIntegerField(blank=True, null=True)
     soa_expire = models.PositiveIntegerField(blank=True, null=True)
@@ -272,7 +275,7 @@ class Prefix(CreatedUpdatedModel):
                                   "instead.")
 
     def save(self, *args, **kwargs):
-        self.update_serial()
+        self.bind_changed = True
         if self.prefix:
             # Clear host bits from prefix
             self.prefix = self.prefix.cidr
@@ -280,23 +283,31 @@ class Prefix(CreatedUpdatedModel):
             self.family = self.prefix.version
         super(Prefix, self).save(*args, **kwargs)
 
+    def set_bind_changed(self, value):
+        self.bind_changed = value
+        super(Prefix, self).save()
+
     def update_serial(self):
         """
         Each time a record or the zone is modified, the serial is incremented.
         """
         current_date = time.strftime('%Y%m%d',time.localtime())
         if not self.soa_serial:
-            self.soa_serial = current_date+'1'
+            self.soa_serial = current_date+'01'
         else:
             serial_date = self.soa_serial[:8]
             serial_num = self.soa_serial[8:]
             
             if serial_date!=current_date:
-                self.soa_serial = current_date+'1'
+                self.soa_serial = current_date+'01'
             else:
                 serial_num = int(serial_num)
                 serial_num += 1
-                self.soa_serial = current_date + str(serial_num)
+                if serial_num < 10:
+                    self.soa_serial = current_date + '0' + str(serial_num)
+                else:
+                    self.soa_serial = current_date + str(serial_num)
+        self.set_bind_changed(False)
 
     def to_csv(self):
         return ','.join([
@@ -331,6 +342,8 @@ class Prefix(CreatedUpdatedModel):
         return STATUS_CHOICE_CLASSES[self.status]
 
     def to_bind(self,ipaddresses):
+        if self.bind_changed:
+            self.update_serial()
 
         zones = {}
 
