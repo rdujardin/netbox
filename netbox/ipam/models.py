@@ -523,8 +523,7 @@ class IPAddress(CreatedUpdatedModel):
                     name = record_name,
                     record_type = record_type,
                     zone = which_zone,
-                    address = self,
-                    description = 'gen by netbox'
+                    address = self
                 ) 
 
     def to_csv(self):

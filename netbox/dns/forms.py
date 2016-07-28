@@ -11,6 +11,8 @@ from .models import (
 	Record,
 )
 
+from .formfields import AddressFormField
+
 #
 # Zones
 #
@@ -73,6 +75,8 @@ class ZoneFilterForm(forms.Form, BootstrapMixin):
 
 class RecordForm(forms.ModelForm, BootstrapMixin):
 
+	address = AddressFormField(required=False)
+
 	class Meta:
 		model=Record
 		fields = ['name', 'record_type', 'priority', 'zone', 'address', 'value', 'description']
@@ -88,10 +92,11 @@ class RecordForm(forms.ModelForm, BootstrapMixin):
 			'value': 'Text value else, in CNAME records for instance'
 		}
 
+
 class RecordFromCSVForm(forms.ModelForm):
 
 	zone = forms.ModelChoiceField(queryset=Zone.objects.all(), to_field_name='name', error_messages={'invalid_choice': 'Zone not found.'})
-	address = forms.ModelChoiceField(queryset=IPAddress.objects.all(), to_field_name='address', error_messages={'invalid_choice': 'IP Address not found.'}, required=False)
+	address = AddressFormField(required=False)
 
 	class Meta:
 		model=Record
@@ -114,7 +119,7 @@ class RecordBulkEditForm(forms.Form, BootstrapMixin):
 	record_type = forms.CharField(max_length=100, required=False, label='Type')
 	priority = forms.IntegerField(required=False)
 	zone = forms.ModelChoiceField(queryset=Zone.objects.all(), required=False)
-	address = forms.ModelChoiceField(queryset=IPAddress.objects.all(), required=False)
+	address = AddressFormField(required=False)
 	value = forms.CharField(max_length=100, required=False)
 
 class RecordBulkDeleteForm(ConfirmationForm):
