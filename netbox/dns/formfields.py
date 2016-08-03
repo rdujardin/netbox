@@ -12,30 +12,28 @@ from ipam.models import IPAddress, Prefix
 #
 
 class AddressFormField(forms.Field):
-	default_error_messages = {
-		'invalid': "Enter a valid IPv4 or IPv6 address (with CIDR mask).",
-	}
+    default_error_messages = {
+        'invalid': "Enter a valid IPv4 or IPv6 address (with CIDR mask).",
+    }
 
-	def to_python(self, value):
-		if not value:
-			return None
+    def to_python(self, value):
+        if not value:
+            return None
 
-		# Ensure that a subnet mask has been specified. This prevents IPs from defaulting to a /32 or /128.
-		if len(value.split('/')) != 2:
-			raise ValidationError('CIDR mask (e.g. /24) is required.')
+        # Ensure that a subnet mask has been specified. This prevents IPs from defaulting to a /32 or /128.
+        if len(value.split('/')) != 2:
+            raise ValidationError('CIDR mask (e.g. /24) is required.')
 
-		try:
-			net = IPNetwork(value)
-		except AddrFormatError:
-			raise ValidationError("Please specify a valid IPv4 or IPv6 address.")
+        try:
+            net = IPNetwork(value)
+        except AddrFormatError:
+            raise ValidationError("Please specify a valid IPv4 or IPv6 address.")
 
-		ip = IPAddress.objects.filter(address=value)
-		if not ip:
-			net = IPNetwork(value)
-			obj = IPAddress(address=net)
-			obj.save()
-			return obj
-		else:
-			return ip[0]
-
-
+        ip = IPAddress.objects.filter(address=value)
+        if not ip:
+            net = IPNetwork(value)
+            obj = IPAddress(address=net)
+            obj.save()
+            return obj
+        else:
+            return ip[0]

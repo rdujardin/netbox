@@ -71,10 +71,10 @@
         "soa_name": "",
         "soa_contact": "",
         "soa_serial": "",
-        "soa_refresh": "",
-        "soa_retry": "",
-        "soa_expire": "",
-        "soa_minimum": ""
+        "soa_refresh": null,
+        "soa_retry": null,
+        "soa_expire": null,
+        "soa_minimum": null
     }
 },
 {

@@ -411,7 +411,6 @@ class IPAddressFromCSVForm(forms.ModelForm):
         model = IPAddress
         fields = ['address', 'vrf', 'tenant', 'ptr', 'device', 'interface_name', 'is_primary', 'description']
 
-
     def clean(self):
 
         device = self.cleaned_data.get('device')
@@ -459,7 +458,6 @@ class IPAddressBulkEditForm(forms.Form, BootstrapMixin):
     ptr = forms.CharField(max_length=100, required=False, label='PTR')
     tenant = forms.TypedChoiceField(choices=bulkedit_tenant_choices, coerce=int, required=False, label='Tenant')
     description = forms.CharField(max_length=100, required=False)
-
 
 
 def ipaddress_family_choices():
