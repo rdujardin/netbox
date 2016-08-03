@@ -73,10 +73,45 @@
 					<td>Short description (optional)</td>
 					<td>7th floor WiFi</td>
 				</tr>
+				<tr>
+					<td>Reverse DNS - TTL</td>
+					<td>Time to live, in seconds</td>
+					<td>10800</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Name</td>
+					<td>The primary name server for the domain, @ for origin</td>
+					<td>@</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Contact</td>
+					<td>The responsible party for the domain</td>
+					<td>ns.foo.net. noc.foo.net.</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Refresh</td>
+					<td>Refresh time, in seconds</td>
+					<td>3600</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Retry</td>
+					<td>Retry time, in seconds</td>
+					<td>3600</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Expire</td>
+					<td>Expire time, in seconds</td>
+					<td>604800</td>
+				</tr>
+				<tr>
+					<td>Reverse DNS - SOA Minimum</td>
+					<td>Negative result TTL, in seconds</td>
+					<td>1800</td>
+				</tr>
 			</tbody>
 		</table>
 		<h4>Example</h4>
-		<pre>192.168.42.0/24,65000:123,ABC01,HQ,Customers,801,Active,Customer,7th floor WiFi</pre>
+		<pre>192.168.42.0/24,65000:123,ABC01,HQ,Customers,801,Active,Customer,7th floor WiFi,10800,@,ns.foo.net. noc.foo.net.,3600,3600,604800,1800</pre>
 	</div>
 </div>
 {% endblock %}

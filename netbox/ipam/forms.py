@@ -158,7 +158,16 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = Prefix
-        fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan', 'status', 'role', 'description']
+        fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
+        labels = {
+            'ttl': 'Rev. DNS - TTL',
+            'soa_name': 'Rev. DNS - SOA Name',
+            'soa_contact': 'Rev. DNS - SOA Contact',
+            'soa_refresh': 'Rev. DNS - SOA Refresh',
+            'soa_retry': 'Rev. DNS - SOA Retry',
+            'soa_expire': 'Rev. DNS - SOA Expire',
+            'soa_minimum': 'Rev. DNS - SOA Minimum',
+        }
         help_texts = {
             'prefix': "IPv4 or IPv6 network",
             'vrf': "VRF (if applicable)",
@@ -166,6 +175,13 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
             'vlan': "The VLAN to which this prefix is assigned (if applicable)",
             'status': "Operational status of this prefix",
             'role': "The primary function of this prefix",
+            'ttl': "Time to live, in seconds",
+            'soa_name': "The primary name server for the domain, @ for origin",
+            'soa_contact': "The responsible party for the zone (e.g. ns.foo.net. noc.foo.net.)",
+            'soa_refresh': "Refresh time, in seconds",
+            'soa_retry': "Retry time, in seconds",
+            'soa_expire': "Expire time, in seconds",
+            'soa_minimum': "Negative result TTL, in seconds",
         }
 
     def __init__(self, *args, **kwargs):
@@ -212,7 +228,7 @@ class PrefixFromCSVForm(forms.ModelForm):
     class Meta:
         model = Prefix
         fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan_group_name', 'vlan_vid', 'status_name', 'role',
-                  'description']
+                  'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
 
     def clean(self):
 
@@ -263,6 +279,14 @@ class PrefixBulkEditForm(forms.Form, BootstrapMixin):
     status = forms.ChoiceField(choices=FORM_PREFIX_STATUS_CHOICES, required=False)
     role = forms.ModelChoiceField(queryset=Role.objects.all(), required=False)
     description = forms.CharField(max_length=100, required=False)
+
+    ttl = forms.IntegerField(required=False, label='Reverse DNS - TTL')
+    soa_name = forms.CharField(max_length=100, required=False, label='Reverse DNS - SOA Name')
+    soa_contact = forms.CharField(max_length=100, required=False, label='Reverse DNS - SOA Contact')
+    soa_refresh = forms.IntegerField(required=False, label='Reverse DNS - SOA Refresh')
+    soa_retry = forms.IntegerField(required=False, label='Reverse DNS - SOA Retry')
+    soa_expire = forms.IntegerField(required=False, label='Reverse DNS - SOA Expire')
+    soa_minimum = forms.IntegerField(required=False, label='Reverse DNS - SOA Minimum')
 
 
 def prefix_vrf_choices():
@@ -326,10 +350,11 @@ class IPAddressForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = IPAddress
-        fields = ['address', 'vrf', 'tenant', 'nat_device', 'nat_inside', 'description']
+        fields = ['address', 'vrf', 'tenant', 'ptr', 'nat_device', 'nat_inside', 'description']
         help_texts = {
             'address': "IPv4 or IPv6 address and mask",
             'vrf': "VRF (if applicable)",
+            'ptr': "Reverse DNS name",
         }
 
     def __init__(self, *args, **kwargs):
@@ -384,7 +409,8 @@ class IPAddressFromCSVForm(forms.ModelForm):
 
     class Meta:
         model = IPAddress
-        fields = ['address', 'vrf', 'tenant', 'device', 'interface_name', 'is_primary', 'description']
+        fields = ['address', 'vrf', 'tenant', 'ptr', 'device', 'interface_name', 'is_primary', 'description']
+
 
     def clean(self):
 
@@ -430,8 +456,10 @@ class IPAddressImportForm(BulkImportForm, BootstrapMixin):
 class IPAddressBulkEditForm(forms.Form, BootstrapMixin):
     pk = forms.ModelMultipleChoiceField(queryset=IPAddress.objects.all(), widget=forms.MultipleHiddenInput)
     vrf = forms.TypedChoiceField(choices=bulkedit_vrf_choices, coerce=int, required=False, label='VRF')
+    ptr = forms.CharField(max_length=100, required=False, label='PTR')
     tenant = forms.TypedChoiceField(choices=bulkedit_tenant_choices, coerce=int, required=False, label='Tenant')
     description = forms.CharField(max_length=100, required=False)
+
 
 
 def ipaddress_family_choices():
