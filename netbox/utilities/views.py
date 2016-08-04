@@ -21,6 +21,8 @@ from .error_handlers import handle_protectederror
 from .forms import ConfirmationForm
 from .paginator import EnhancedPaginator
 
+from userscripts import signal_bulk_edit
+
 
 class ObjectListView(View):
     queryset = None
@@ -281,7 +283,8 @@ class BulkEditView(View):
         if '_apply' in request.POST:
             form = self.form(request.POST)
             if form.is_valid():
-                updated_count = self.update_objects(pk_list, form)
+                with signal_bulk_edit(self.cls, pk_list):
+                    updated_count = self.update_objects(pk_list, form)
                 if updated_count:
                     msg = u'Updated {} {}'.format(updated_count, self.cls._meta.verbose_name_plural)
                     messages.success(self.request, msg)

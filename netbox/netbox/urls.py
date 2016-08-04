@@ -5,6 +5,8 @@ from django.views.defaults import page_not_found
 from views import home, trigger_500, handle_500
 from users.views import login, logout
 
+import userscripts
+userscripts._load()
 
 handler500 = handle_500
 

@@ -32,7 +32,7 @@ Careful consideration has been given to the data model to ensure that it can acc
 
 ## Serve as a "Source of Truth"
 
-NetBox intends to represent the _desired_ state of a network versus its _operational_ state. As such, automated import of live network state is strongly discouraged. All data created in NetBox should first be vetted by a human to ensure its integrity. NetBox can then be used to populate monitoring and provisioning systems with a high degree of confidence.
+NetBox intends to represent the _desired_ state of a network versus its _operational_ state. As such, automated import of live network state is strongly discouraged. All data created in NetBox should first be vetted by a human to ensure its integrity. NetBox can then be used to populate monitoring and provisioning systems with a high degree of confidence. For this purpose, [user scripts](userscripts.md) can be used.
 
 ## Keep it Simple
 
