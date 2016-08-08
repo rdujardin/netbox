@@ -524,7 +524,7 @@ class IPAddress(CreatedUpdatedModel):
             which_zone = None
             zones = dns.models.Zone.objects.all()
             for zone in zones:
-                if self.ptr.endswith(zone.name):
+                if self.ptr.endswith(zone.name) or self.ptr.endswith(zone.name + '.'):
                     which_zone = zone
                     break
 
