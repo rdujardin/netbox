@@ -509,14 +509,14 @@ class IPAddress(CreatedUpdatedModel):
                 raise ValidationError("Duplicate IP address found in global table: {}".format(duplicate_ips.first()))
 
     def save(self, *args, **kwargs):
-        self.update_dns()
         if self.address:
             # Infer address family from IPAddress object
             self.family = self.address.version
+        super(IPAddress, self).save(*args, **kwargs)
+        self.update_dns()
         dns_records = dns.models.Record.objects.filter(address=self)
         for r in dns_records:
             r.save()
-        super(IPAddress, self).save(*args, **kwargs)
 
     def update_dns(self):
         """Auto-create a corresponding A/AAAA DNS record (if possible) whenever the PTR field is modified"""
@@ -530,7 +530,7 @@ class IPAddress(CreatedUpdatedModel):
 
             if which_zone:
                 zone_name = which_zone.name
-                record_name = self.ptr[:-len(zone_name)]
+                record_name = self.ptr[:-len(zone_name)] if not self.ptr.endswith('.') else self.ptr[:-len(zone_name) - 1]
                 if record_name.endswith('.'):
                     record_name = record_name[:-1]
                 record_type = 'A' if self.family == 4 else 'AAAA'
