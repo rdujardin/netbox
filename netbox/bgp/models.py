@@ -32,12 +32,12 @@ class ASN(CreatedUpdatedModel):
 
     def to_csv(self):
         return ','.join([
-            self.asn,
+            str(self.asn),
             self.as_name if self.as_name else '',
             self.tenant.name if self.tenant else '',
             self.as_set4 if self.as_set4 else '',
             self.as_set6 if self.as_set6 else '',
-            self.lock_as_set,
+            str(self.lock_as_set),
             self.prefixes4 if self.prefixes4 else '',
             self.prefixes6 if self.prefixes6 else '',
         ])
