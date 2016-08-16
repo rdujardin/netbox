@@ -2,6 +2,10 @@ from django.core.urlresolvers import reverse
 from django.db import models
 
 from utilities.models import CreatedUpdatedModel
+from utilities.whois import whois
+
+import subprocess
+import json
 
 
 class ASN(CreatedUpdatedModel):
@@ -37,3 +41,80 @@ class ASN(CreatedUpdatedModel):
             self.prefixes4 if self.prefixes4 else '',
             self.prefixes6 if self.prefixes6 else '',
         ])
+
+    def save(self, *args, **kwargs):
+        self.load_data()
+        super(ASN, self).save(*args, **kwargs)
+
+    def load_data(self):
+        self_ixp_asn = 51706
+        who = whois('rr.ntt.net', 'AS{}'.format(self.asn))
+        if not who:
+            return
+        self.as_name = who['as-name'][0] if 'as-name' in who else self.as_name
+
+        if not self.lock_as_set:
+            ln_export = who['export'] if 'export' in who else []
+            ln_export_via = who['export-via'] if 'export-via' in who else []
+            ln_mp_export = who['mp-export'] if 'mp-export' in who else []
+            ios = ln_export + ln_export_via + ln_mp_export
+            for io in ios:
+                if 'AS{}'.format(self_ixp_asn) in io:
+                    as_set = io.split('announce')
+                    if as_set:
+                        as_set = as_set[len(as_set) - 1].strip()
+                        if 'ipv4' in io and not 'ipv6' in io:
+                            self.as_set4 = as_set
+                        elif 'ipv6' in io and not 'ipv4' in io:
+                            self.as_set6 = as_set
+                        else:
+                            self.as_set4 = as_set
+                            self.as_set6 = as_set
+
+            bgpq3_queries_v4 = (
+                self.as_set4 if self.as_set4 else None,
+                'AS{}'.format(self.asn) if not self.as_set4 else None,
+            )
+
+            bgpq3_queries_v6 = (
+                self.as_set6 if self.as_set6 and self.as_set4 else None,
+                'AS{}'.format(self.asn) if not self.as_set4 else None,
+            )
+
+            for q in bgpq3_queries_v4:
+                if q:
+                    cmd = ['bgpq3', '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-l', 'data', q]
+                    try:
+                        bgpq3 = json.loads(subprocess.check_output(cmd))
+                        prefixes = []
+                        for p in bgpq3['data']:
+                            prefixes.append(p['prefix'])
+                        self.prefixes4 = ';'.join(prefixes)
+                    except:
+                        return
+
+            for q in bgpq3_queries_v6:
+                if q:
+                    cmd = ['bgpq3', '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-6', '-l', 'data', q]
+                    try:
+                        bgpq3 = json.loads(subprocess.check_output(cmd))
+                        prefixes = []
+                        for p in bgpq3['data']:
+                            prefixes.append(p['prefix'])
+                        self.prefixes6 = ';'.join(prefixes)
+                    except:
+                        return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
