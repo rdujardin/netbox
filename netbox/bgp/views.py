@@ -62,7 +62,15 @@ class ASNBulkEditView(PermissionRequiredMixin, BulkEditView):
     def update_objects(self, pk_list, form):
 
         fields_to_update = {}
-        return self.cls.objects.filter(pk__in=pk_list).update(**fields_to_update)
+        for field in ['asn', 'as_name', 'tenant', 'as_set4', 'as_set6', 'lock_as_set', 'prefixes4', 'prefixes6']:
+            if form.cleaned_data[field]:
+                fields_to_update[field] = form.cleaned_data[field]
+
+        objs = self.cls.objects.filter(pk__in=pk_list)
+        out = objs.update(**fields_to_update)
+        for obj in objs:
+            obj.save()
+        return out
 
 
 class ASNBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
