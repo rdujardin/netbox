@@ -31,47 +31,47 @@
                 <tr>
                     <td>ASN</td>
                     <td>AS Number</td>
-                    <td>DC-4</td>
+                    <td>51706</td>
                 </tr>
                 <tr>
                     <td>AS Name</td>
-                    <td>Rack group name (optional)</td>
-                    <td>Cage 1400</td>
+                    <td>AS Name</td>
+                    <td>France-IX</td>
                 </tr>
                 <tr>
                     <td>Tenant</td>
-                    <td>tenant</td>
-                    <td>blb</td>
+                    <td>Tenant</td>
+                    <td>France IX</td>
                 </tr>
                 <tr>
                     <td>AS SET v4</td>
-                    <td>Internal rack name</td>
-                    <td>R101</td>
+                    <td>AS SET or ASN to load for IPv4</td>
+                    <td>AS-FRANCEIX</td>
                 </tr>
                 <tr>
                     <td>AS SET v6</td>
-                    <td>Rack ID assigned by the facility (optional)</td>
-                    <td>J12.100</td>
+                    <td>AS SET or ASN to load for IPv6</td>
+                    <td>AS-FRANCEIXV6</td>
                 </tr>
                 <tr>
                     <td>Locked AS SETs ?</td>
-                    <td>..</td>
-                    <td>..</td>
+                    <td>Deactivates auto data loading and prevents manually-set data loss</td>
+                    <td>False</td>
                 </tr>
                 <tr>
                     <td>Prefixes v4</td>
-                    <td>Name of tenant (optional)</td>
-                    <td>Pied Piper</td>
+                    <td>Allowed prefixes for IPv4 (semi-colon separated)</td>
+                    <td>217.87.55.0/23;24.34.44.56.0/17</td>
                 </tr>
                 <tr>
                     <td>Prefixes v6</td>
-                    <td>Rack type (optional)</td>
-                    <td>4-post cabinet</td>
+                    <td>Allowed prefixes for IPv6 (semi-colon separated)</td>
+                    <td>2006:5::/64;32:32:32::/48</td>
                 </tr>
             </tbody>
         </table>
         <h4>Example</h4>
-        <pre>DC-4,Cage 1400,R101,J12.100,Pied Piper,4-post cabinet,19,42</pre>
+        <pre>51706,France-IX,France IX,AS-FRANCEIX,AS-FRANCEIXV6,False,217.87.55.0/23;24.34.44.56.0/17,2006:5::/64;32:32:32::/48</pre>
     </div>
 </div>
 {% endblock %}
