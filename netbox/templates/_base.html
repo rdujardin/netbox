@@ -165,6 +165,16 @@
                             {% endif %}
                         </ul>
                     </li>
+                    <li class="dropdown{% if request.path|startswith:'/bgp/' %} active{%endif%}">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">BGP <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{% url 'bgp:asn_list' %}"><i class="fa fa-search" aria-hidden="true"></i> ASNs</a></li>
+                            {% if perms.bgp.add_asn %}
+                                <li><a href="{% url 'bgp:asn_add' %}"><i class="fa fa-plus" aria-hidden="true"></i> Add an ASN</a></li>
+                                <li><a href="{% url 'bgp:asn_import' %}"><i class="fa fa-download" aria-hidden="true"></i> Import ASNs</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
                     <li class="dropdown{% if request.path|startswith:'/ipam/vlan' %} active{% endif %}">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">VLANs <span class="caret"></span></a>
                         <ul class="dropdown-menu">

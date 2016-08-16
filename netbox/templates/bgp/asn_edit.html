@@ -1,0 +1,18 @@
+{% extends 'utilities/obj_edit.html' %}
+{% load form_helpers %}
+
+{% block form %}
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>ASN</strong></div>
+        <div class="panel-body">
+            {% render_field form.asn %}
+            {% render_field form.as_name %}
+            {% render_field form.tenant %}
+            {% render_field form.as_set4 %}
+            {% render_field form.as_set6 %}
+            {% render_field form.lock_as_set %}
+            {% render_field form.prefixes4 %}
+            {% render_field form.prefixes6 %}
+        </div>
+    </div>
+{% endblock %}

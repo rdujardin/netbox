@@ -1,0 +1,132 @@
+{% extends '_base.html' %}
+{% load helpers %}
+{% load render_table from django_tables2 %}
+
+{% block title %}{{ asn }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'bgp:asn_list' %}">ASNs</a></li>
+            <li>{{ asn }}</li>
+        </ol>
+    </div>
+    <div class="col-md-3">
+        <form action="{% url 'bgp:asn_list' %}" method="get">
+            <div class="input-group">
+                <input type="text" name="q" class="form-control" placeholder="Search racks" />
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-primary">
+                        <span class="fa fa-search" aria-hidden="true"></span>
+                    </button>
+                </span>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="pull-right">
+    {% if perms.bgp.change_asn %}
+        <a href="{% url 'bgp:asn_edit' asn=asn.asn %}" class="btn btn-warning">
+            <span class="fa fa-pencil" aria-hidden="true"></span>
+            Edit this ASN
+        </a>
+    {% endif %}
+    {% if perms.bgp.delete_asn %}
+        <a href="{% url 'bgp:asn_delete' asn=asn.asn %}" class="btn btn-danger">
+            <span class="fa fa-trash" aria-hidden="true"></span>
+            Delete this ASN
+        </a>
+    {% endif %}
+</div>
+<h1>{{ asn }}</h1>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <strong>ASN</strong>
+            </div>
+            <table class="table table-hover panel-body">
+                <tr>
+                    <td>AS Number</td>
+                    <td>
+                        <a href="{% url 'bgp:asn' asn=asn.asn %}">{{ asn.asn }}</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>AS Name</td>
+                    <td>
+                        {% if asn.as_name %}
+                            {{ asn.as_name }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Tenant</td>
+                    <td>
+                        {% if asn.tenant %}
+                            <a href="{% url 'tenancy:tenant' pk=asn.tenant.pk %}">{{ asn.tenant }}</a>
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>AS SET v4</td>
+                    <td>
+                        {% if asn.as_set4 %}
+                            {{ asn.as_set4 }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>AS SET v6</td>
+                    <td>
+                        {% if asn.as_set6 %}
+                            {{ asn.as_set6 }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Locked AS SETs ?</td>
+                    <td>{{ asn.lock_as_set }}</td>
+                </tr>
+                <tr>
+                    <td>Prefixes v4</td>
+                    <td>
+                        {% if asn.prefixes4 %}
+                            {{ asn.prefixes4 }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Prefixes v6</td>
+                    <td>
+                        {% if asn.prefixes6 %}
+                            {{ asn.prefixes6 }}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Created</td>
+                    <td>{{ asn.created }}</td>
+                </tr>
+                <tr>
+                    <td>Last Updated</td>
+                    <td>{{ asn.last_updated }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

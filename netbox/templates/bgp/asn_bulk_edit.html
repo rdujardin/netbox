@@ -1,0 +1,29 @@
+{% extends 'utilities/bulk_edit_form.html' %}
+{% load form_helpers %}
+
+{% block title %}ASN Bulk Edit{% endblock %}
+
+{% block select_objects_table %}
+    <tr>
+        <th>ASN</th>
+        <th>AS Name</th>
+        <th>Tenant</th>
+        <th>AS SET v4</th>
+        <th>AS SET v6</th>
+        <th>Locked AS SETs ?</th>
+        <th>Prefixes v4</th>
+        <th>Prefixes v6</th>
+    </tr>
+    {% for asn in selected_objects %}
+        <tr>
+            <td><a href="{% url 'bgp:asn' asn=asn.asn %}">{{ asn.asn }}</a></td>
+            <td>{{ asn.as_name }}</td>
+            <td>{{ asn.tenant }}</td>
+            <td>{{ asn.as_set4 }}</td>
+            <td>{{ asn.as_set6 }}</td>
+            <td>{{ asn.lock_as_set }}</td>
+            <td>{{ asn.prefixes4 }}</td>
+            <td>{{ asn.prefixes6 }}U</td>
+        </tr>
+    {% endfor %}
+{% endblock %}

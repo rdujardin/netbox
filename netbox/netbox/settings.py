@@ -111,6 +111,7 @@ INSTALLED_APPS = (
     'tenancy',
     'users',
     'utilities',
+    'bgp',
 )
 
 # Middleware
