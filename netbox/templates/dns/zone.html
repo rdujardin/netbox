@@ -87,6 +87,16 @@
                     <td>{{ zone.soa_minimum }}</td>
                 </tr>
                 <tr>
+                    <td>Extra Conf</td>
+                    <td>
+                        {% if zone.extra_conf %}
+                            {{ zone.extra_conf }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
                     <td>Description</td>
                     <td>
                         {% if zone.description %}

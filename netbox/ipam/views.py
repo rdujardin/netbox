@@ -409,7 +409,7 @@ class PrefixBulkEditView(PermissionRequiredMixin, BulkEditView):
                 fields_to_update[field] = None
             elif form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
-        for field in ['site', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']:
+        for field in ['site', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf']:
             if form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
 

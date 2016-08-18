@@ -40,8 +40,7 @@ def zone(request, pk):
     record_count = len(records)
 
     # DNS records
-    dns_records = Record.objects.filter(zone=zone)
-    dns_records_table = RecordZoneTable(dns_records)
+    dns_records_table = RecordZoneTable(records)
 
     return render(request, 'dns/zone.html', {
         'zone': zone,
@@ -82,7 +81,7 @@ class ZoneBulkEditView(PermissionRequiredMixin, BulkEditView):
     def update_objects(self, pk_list, form):
 
         fields_to_update = {}
-        for field in ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']:
+        for field in ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf']:
             if form.cleaned_data[field]:
                 fields_to_update[field] = form.cleaned_data[field]
 
@@ -184,10 +183,13 @@ def bind_export(request, zones_list, context):
             zbuf = StringIO.StringIO()
             zfile = zipfile.ZipFile(zbuf, mode='w')
             temp = []
+            cf = ''
             for z in zones_list:
                 temp.append(StringIO.StringIO())
                 temp[len(temp) - 1].write(z['content'])
                 zfile.writestr(z['id'], str(temp[len(temp) - 1].getvalue()))
+                cf += '{}:\n\t{}\n'.format(z['id'], z['extra_conf'] if z['extra_conf'] else '')
+            zfile.writestr('extra_confs.txt', cf)
             zfile.close()
             response = HttpResponse(
                 zbuf.getvalue(),

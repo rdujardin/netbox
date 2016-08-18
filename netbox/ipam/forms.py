@@ -6,7 +6,7 @@ from django.db.models import Count
 from dcim.models import Site, Device, Interface
 from tenancy.forms import bulkedit_tenant_choices
 from tenancy.models import Tenant
-from utilities.forms import BootstrapMixin, APISelect, Livesearch, CSVDataField, BulkImportForm, SlugField
+from utilities.forms import BootstrapMixin, APISelect, Livesearch, CSVDataField, BulkImportForm, SlugField, SmallTextarea
 
 from .models import (
     Aggregate, IPAddress, Prefix, PREFIX_STATUS_CHOICES, RIR, Role, VLAN, VLANGroup, VLAN_STATUS_CHOICES, VRF,
@@ -158,7 +158,7 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = Prefix
-        fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
+        fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan', 'status', 'role', 'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf']
         labels = {
             'ttl': 'Rev. DNS - TTL',
             'soa_name': 'Rev. DNS - SOA Name',
@@ -167,6 +167,7 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
             'soa_retry': 'Rev. DNS - SOA Retry',
             'soa_expire': 'Rev. DNS - SOA Expire',
             'soa_minimum': 'Rev. DNS - SOA Minimum',
+            'extra_conf': 'Rev. DNS - Extra Conf',
         }
         help_texts = {
             'prefix': "IPv4 or IPv6 network",
@@ -182,6 +183,10 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
             'soa_retry': "Retry time, in seconds",
             'soa_expire': "Expire time, in seconds",
             'soa_minimum': "Negative result TTL, in seconds",
+            'extra_conf': "Extra conf related to the zone, to put in your DNS server main conf file",
+        }
+        widgets = {
+            'extra_conf': SmallTextarea(attrs={'rows': 3}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -228,7 +233,7 @@ class PrefixFromCSVForm(forms.ModelForm):
     class Meta:
         model = Prefix
         fields = ['prefix', 'vrf', 'tenant', 'site', 'vlan_group_name', 'vlan_vid', 'status_name', 'role',
-                  'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum']
+                  'description', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf']
 
     def clean(self):
 
@@ -287,6 +292,7 @@ class PrefixBulkEditForm(forms.Form, BootstrapMixin):
     soa_retry = forms.IntegerField(required=False, label='Reverse DNS - SOA Retry')
     soa_expire = forms.IntegerField(required=False, label='Reverse DNS - SOA Expire')
     soa_minimum = forms.IntegerField(required=False, label='Reverse DNS - SOA Minimum')
+    extra_conf = forms.CharField(max_length=500, required=False, label='Reverse DNS - Extra Conf', widget=SmallTextarea(attrs={'rows': 3}))
 
 
 def prefix_vrf_choices():

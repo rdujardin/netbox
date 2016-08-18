@@ -3,7 +3,7 @@ from django.db.models import Count
 
 from ipam.models import IPAddress
 from utilities.forms import (
-    BootstrapMixin, ConfirmationForm, APISelect, Livesearch, CSVDataField, BulkImportForm,
+    BootstrapMixin, ConfirmationForm, APISelect, Livesearch, CSVDataField, BulkImportForm, SmallTextarea
 )
 
 from .models import (
@@ -22,7 +22,7 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
 
     class Meta:
         model = Zone
-        fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
+        fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf', 'description']
         labels = {
             'soa_name': 'SOA Name',
             'soa_contact': 'SOA Contact',
@@ -30,6 +30,7 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
             'soa_retry': 'SOA Retry',
             'soa_expire': 'SOA Expire',
             'soa_minimum': 'SOA Minimum',
+            'extra_conf': 'Extra Conf',
             'description': 'Description',
         }
         help_texts = {
@@ -40,6 +41,10 @@ class ZoneForm(forms.ModelForm, BootstrapMixin):
             'soa_retry': "Retry time, in seconds",
             'soa_expire': "Expire time, in seconds",
             'soa_minimum': "Negative result TTL, in seconds",
+            'extra_conf': "Extra conf related to the zone, to put in your DNS server main conf file",
+        }
+        widgets = {
+            'extra_conf': SmallTextarea(attrs={'rows': 3}),
         }
 
 
@@ -47,7 +52,7 @@ class ZoneFromCSVForm(forms.ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'description']
+        fields = ['name', 'ttl', 'soa_name', 'soa_contact', 'soa_refresh', 'soa_retry', 'soa_expire', 'soa_minimum', 'extra_conf', 'description']
 
 
 class ZoneImportForm(BulkImportForm, BootstrapMixin):
@@ -64,6 +69,7 @@ class ZoneBulkEditForm(forms.Form, BootstrapMixin):
     soa_retry = forms.IntegerField(required=False, label='SOA Retry')
     soa_expire = forms.IntegerField(required=False, label='SOA Expire')
     soa_minimum = forms.IntegerField(required=False, label='SOA Minimum')
+    extra_conf = forms.CharField(max_length=500, required=False, widget=SmallTextarea(attrs={'rows': 3}), label='Extra Conf')
     description = forms.CharField(max_length=100, required=False, label='Description')
 
 

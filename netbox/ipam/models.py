@@ -259,6 +259,7 @@ class Prefix(CreatedUpdatedModel):
     soa_expire = models.PositiveIntegerField(blank=True, null=True)
     soa_minimum = models.PositiveIntegerField(blank=True, null=True)
 
+    extra_conf = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=100, blank=True)
 
     class Meta:
@@ -331,6 +332,7 @@ class Prefix(CreatedUpdatedModel):
             str(self.soa_retry) if self.soa_retry else '',
             str(self.soa_expire) if self.soa_expire else '',
             str(self.soa_minimum) if self.soa_minimum else '',
+            '"{}"'.format(self.extra_conf) if self.extra_conf else '',
         ])
 
     @property
