@@ -12,7 +12,7 @@ except ImportError:
                                "the documentation.")
 
 
-VERSION = '1.4.2-dev'
+VERSION = '1.5.3-dev'
 
 # Import local configuration
 for setting in ['ALLOWED_HOSTS', 'DATABASE', 'SECRET_KEY']:
@@ -164,6 +164,9 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "project-static"),
 )
 
+# Disable default limit of 1000 fields per request. Needed for bulk deletion of objects. (Added in Django 1.10.)
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
+
 # Messages
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
@@ -172,7 +175,6 @@ MESSAGE_TAGS = {
 # Authentication URLs
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_URL = '/logout/'
 
 # Secrets
 SECRETS_MIN_PUBKEY_SIZE = 2048

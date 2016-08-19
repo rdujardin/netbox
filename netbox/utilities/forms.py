@@ -27,6 +27,13 @@ def expand_pattern(string):
             yield "{}{}{}".format(lead, i, remnant)
 
 
+def add_blank_choice(choices):
+    """
+    Add a blank choice to the beginning of a choices list.
+    """
+    return ((None, '---------'),) + choices
+
+
 #
 # Widgets
 #
@@ -123,11 +130,11 @@ class CSVDataField(forms.CharField):
         '"New York, NY",new-york-ny,Other stuff' => ['New York, NY', 'new-york-ny', 'Other stuff']
     """
     csv_form = None
+    widget = forms.Textarea
 
     def __init__(self, csv_form, *args, **kwargs):
         self.csv_form = csv_form
         self.columns = self.csv_form().fields.keys()
-        self.widget = forms.Textarea
         super(CSVDataField, self).__init__(*args, **kwargs)
         self.strip = False
         if not self.label:
@@ -231,7 +238,8 @@ class BootstrapMixin(forms.BaseForm):
                     field.widget.attrs['class'] = 'form-control'
             if field.required:
                 field.widget.attrs['required'] = 'required'
-            field.widget.attrs['placeholder'] = field.label
+            if 'placeholder' not in field.widget.attrs:
+                field.widget.attrs['placeholder'] = field.label
 
 
 class ConfirmationForm(forms.Form, BootstrapMixin):

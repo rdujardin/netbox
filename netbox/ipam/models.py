@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models.expressions import RawSQL
 
 from dcim.models import Interface
 from tenancy.models import Tenant
@@ -254,12 +255,13 @@ class Prefix(CreatedUpdatedModel):
 
     def clean(self):
         # Disallow host masks
-        if self.prefix.version == 4 and self.prefix.prefixlen == 32:
-            raise ValidationError("Cannot create host addresses (/32) as prefixes. These should be IPv4 addresses "
-                                  "instead.")
-        elif self.prefix.version == 6 and self.prefix.prefixlen == 128:
-            raise ValidationError("Cannot create host addresses (/128) as prefixes. These should be IPv6 addresses "
-                                  "instead.")
+        if self.prefix:
+            if self.prefix.version == 4 and self.prefix.prefixlen == 32:
+                raise ValidationError("Cannot create host addresses (/32) as prefixes. These should be IPv4 addresses "
+                                      "instead.")
+            elif self.prefix.version == 6 and self.prefix.prefixlen == 128:
+                raise ValidationError("Cannot create host addresses (/128) as prefixes. These should be IPv6 addresses "
+                                      "instead.")
 
     def save(self, *args, **kwargs):
         if self.prefix:
@@ -294,6 +296,20 @@ class Prefix(CreatedUpdatedModel):
         return STATUS_CHOICE_CLASSES[self.status]
 
 
+class IPAddressManager(models.Manager):
+
+    def get_queryset(self):
+        """
+        By default, PostgreSQL will order INETs with shorter (larger) prefix lengths ahead of those with longer
+        (smaller) masks. This makes no sense when ordering IPs, which should be ordered solely by family and host
+        address. We can use HOST() to extract just the host portion of the address (ignoring its mask), but we must
+        then re-cast this value to INET() so that records will be ordered properly. We are essentially re-casting each
+        IP address as a /32 or /128.
+        """
+        qs = super(IPAddressManager, self).get_queryset()
+        return qs.annotate(host=RawSQL('INET(HOST(ipam_ipaddress.address))', [])).order_by('family', 'host')
+
+
 class IPAddress(CreatedUpdatedModel):
     """
     An IPAddress represents an individual IPv4 or IPv6 address and its mask. The mask length should match what is
@@ -315,6 +331,8 @@ class IPAddress(CreatedUpdatedModel):
     nat_inside = models.OneToOneField('self', related_name='nat_outside', on_delete=models.SET_NULL, blank=True,
                                       null=True, verbose_name='NAT IP (inside)')
     description = models.CharField(max_length=100, blank=True)
+
+    objects = IPAddressManager()
 
     class Meta:
         ordering = ['family', 'address']

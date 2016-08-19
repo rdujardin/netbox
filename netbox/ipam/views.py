@@ -66,10 +66,10 @@ def add_available_ipaddresses(prefix, ipaddress_list):
     # Iterate through existing IPs and annotate free ranges
     for ip in ipaddress_list:
         if prev_ip:
-            skipped_count = int(ip.address.ip - prev_ip.address.ip - 1)
-            if skipped_count:
+            diff = int(ip.address.ip - prev_ip.address.ip)
+            if diff > 1:
                 first_skipped = '{}/{}'.format(prev_ip.address.ip + 1, prefix.prefixlen)
-                output.append((skipped_count, first_skipped))
+                output.append((diff - 1, first_skipped))
         output.append(ip)
         prev_ip = ip
 
@@ -305,7 +305,7 @@ class RoleBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 #
 
 class PrefixListView(ObjectListView):
-    queryset = Prefix.objects.select_related('site', 'vrf__tenant', 'role')
+    queryset = Prefix.objects.select_related('site', 'vrf__tenant', 'tenant', 'role')
     filter = filters.PrefixFilter
     filter_form = forms.PrefixFilterForm
     table = tables.PrefixTable
@@ -373,7 +373,7 @@ class PrefixEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_prefix'
     model = Prefix
     form_class = forms.PrefixForm
-    fields_initial = ['site', 'vrf', 'prefix']
+    fields_initial = ['vrf', 'tenant', 'site', 'prefix', 'vlan']
     cancel_url = 'ipam:prefix_list'
 
 
@@ -445,7 +445,7 @@ def prefix_ipaddresses(request, pk):
 #
 
 class IPAddressListView(ObjectListView):
-    queryset = IPAddress.objects.select_related('vrf__tenant', 'interface__device')
+    queryset = IPAddress.objects.select_related('vrf__tenant', 'tenant', 'interface__device')
     filter = filters.IPAddressFilter
     filter_form = forms.IPAddressFilterForm
     table = tables.IPAddressTable
@@ -550,7 +550,7 @@ class IPAddressBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 #
 
 class VLANGroupListView(ObjectListView):
-    queryset = VLANGroup.objects.annotate(vlan_count=Count('vlans'))
+    queryset = VLANGroup.objects.select_related('site').annotate(vlan_count=Count('vlans'))
     filter = filters.VLANGroupFilter
     filter_form = forms.VLANGroupFilterForm
     table = tables.VLANGroupTable
@@ -562,6 +562,7 @@ class VLANGroupEditView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'ipam.change_vlangroup'
     model = VLANGroup
     form_class = forms.VLANGroupForm
+    success_url = 'ipam:vlangroup_list'
     cancel_url = 'ipam:vlangroup_list'
 
 
@@ -576,7 +577,7 @@ class VLANGroupBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 #
 
 class VLANListView(ObjectListView):
-    queryset = VLAN.objects.select_related('site', 'role')
+    queryset = VLAN.objects.select_related('site', 'group', 'tenant', 'role')
     filter = filters.VLANFilter
     filter_form = forms.VLANFilterForm
     table = tables.VLANTable

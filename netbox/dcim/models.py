@@ -3,7 +3,7 @@ from collections import OrderedDict
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.urlresolvers import reverse
-from django.core.validators import MinValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Count, Q, ObjectDoesNotExist
 
@@ -15,6 +15,26 @@ from utilities.models import CreatedUpdatedModel
 
 from .fields import ASNField, MACAddressField
 
+
+RACK_TYPE_2POST = 100
+RACK_TYPE_4POST = 200
+RACK_TYPE_CABINET = 300
+RACK_TYPE_WALLFRAME = 1000
+RACK_TYPE_WALLCABINET = 1100
+RACK_TYPE_CHOICES = (
+    (RACK_TYPE_2POST, '2-post frame'),
+    (RACK_TYPE_4POST, '4-post frame'),
+    (RACK_TYPE_CABINET, '4-post cabinet'),
+    (RACK_TYPE_WALLFRAME, 'Wall-mounted frame'),
+    (RACK_TYPE_WALLCABINET, 'Wall-mounted cabinet'),
+)
+
+RACK_WIDTH_19IN = 19
+RACK_WIDTH_23IN = 23
+RACK_WIDTH_CHOICES = (
+    (RACK_WIDTH_19IN, '19 inches'),
+    (RACK_WIDTH_23IN, '23 inches'),
+)
 
 RACK_FACE_FRONT = 0
 RACK_FACE_REAR = 1
@@ -41,7 +61,7 @@ COLOR_RED = 'red'
 COLOR_GRAY1 = 'light_gray'
 COLOR_GRAY2 = 'medium_gray'
 COLOR_GRAY3 = 'dark_gray'
-DEVICE_ROLE_COLOR_CHOICES = [
+ROLE_COLOR_CHOICES = [
     [COLOR_TEAL, 'Teal'],
     [COLOR_GREEN, 'Green'],
     [COLOR_BLUE, 'Blue'],
@@ -57,20 +77,63 @@ DEVICE_ROLE_COLOR_CHOICES = [
 IFACE_FF_VIRTUAL = 0
 IFACE_FF_100M_COPPER = 800
 IFACE_FF_1GE_COPPER = 1000
+IFACE_FF_GBIC = 1050
 IFACE_FF_SFP = 1100
 IFACE_FF_10GE_COPPER = 1150
 IFACE_FF_SFP_PLUS = 1200
 IFACE_FF_XFP = 1300
 IFACE_FF_QSFP_PLUS = 1400
+IFACE_FF_CFP = 1500
+IFACE_FF_QSFP28 = 1600
+IFACE_FF_T1 = 4000
+IFACE_FF_E1 = 4010
+IFACE_FF_T3 = 4040
+IFACE_FF_E3 = 4050
+IFACE_FF_STACKWISE = 5000
+IFACE_FF_STACKWISE_PLUS = 5050
 IFACE_FF_CHOICES = [
-    [IFACE_FF_VIRTUAL, 'Virtual'],
-    [IFACE_FF_100M_COPPER, '10/100M (100BASE-TX)'],
-    [IFACE_FF_1GE_COPPER, '1GE (1000BASE-T)'],
-    [IFACE_FF_SFP, '1GE (SFP)'],
-    [IFACE_FF_10GE_COPPER, '10GE (10GBASE-T)'],
-    [IFACE_FF_SFP_PLUS, '10GE (SFP+)'],
-    [IFACE_FF_XFP, '10GE (XFP)'],
-    [IFACE_FF_QSFP_PLUS, '40GE (QSFP+)'],
+    [
+        'Virtual interfaces',
+        [
+            [IFACE_FF_VIRTUAL, 'Virtual'],
+        ]
+    ],
+    [
+        'Ethernet',
+        [
+            [IFACE_FF_100M_COPPER, '100BASE-TX (10/100M)'],
+            [IFACE_FF_1GE_COPPER, '1000BASE-T (1GE)'],
+            [IFACE_FF_10GE_COPPER, '10GBASE-T (10GE)'],
+        ]
+    ],
+    [
+        'Modular',
+        [
+            [IFACE_FF_GBIC, 'GBIC (1GE)'],
+            [IFACE_FF_SFP, 'SFP (1GE)'],
+            [IFACE_FF_XFP, 'XFP (10GE)'],
+            [IFACE_FF_SFP_PLUS, 'SFP+ (10GE)'],
+            [IFACE_FF_QSFP_PLUS, 'QSFP+ (40GE)'],
+            [IFACE_FF_CFP, 'CFP (100GE)'],
+            [IFACE_FF_QSFP28, 'QSFP28 (100GE)'],
+        ]
+    ],
+    [
+        'Serial',
+        [
+            [IFACE_FF_T1, 'T1 (1.544 Mbps)'],
+            [IFACE_FF_E1, 'E1 (2.048 Mbps)'],
+            [IFACE_FF_T3, 'T3 (45 Mbps)'],
+            [IFACE_FF_E3, 'E3 (34 Mbps)'],
+        ]
+    ],
+    [
+        'Stacking',
+        [
+            [IFACE_FF_STACKWISE, 'Cisco StackWise'],
+            [IFACE_FF_STACKWISE_PLUS, 'Cisco StackWise Plus'],
+        ]
+    ],
 ]
 
 STATUS_ACTIVE = True
@@ -140,6 +203,10 @@ def order_interfaces(queryset, sql_col, primary_ordering=tuple()):
     }).order_by(*ordering)
 
 
+#
+# Sites
+#
+
 class SiteManager(NaturalOrderByManager):
 
     def get_queryset(self):
@@ -201,6 +268,10 @@ class Site(CreatedUpdatedModel):
         return self.circuits.count()
 
 
+#
+# Racks
+#
+
 class RackGroup(models.Model):
     """
     Racks can be grouped as subsets within a Site. The scope of a group will depend on how Sites are defined. For
@@ -225,6 +296,24 @@ class RackGroup(models.Model):
         return "{}?group_id={}".format(reverse('dcim:rack_list'), self.pk)
 
 
+class RackRole(models.Model):
+    """
+    Racks can be organized by functional role, similar to Devices.
+    """
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(unique=True)
+    color = models.CharField(max_length=30, choices=ROLE_COLOR_CHOICES)
+
+    class Meta:
+        ordering = ['name']
+
+    def __unicode__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return "{}?role={}".format(reverse('dcim:rack_list'), self.slug)
+
+
 class RackManager(NaturalOrderByManager):
 
     def get_queryset(self):
@@ -241,7 +330,12 @@ class Rack(CreatedUpdatedModel):
     site = models.ForeignKey('Site', related_name='racks', on_delete=models.PROTECT)
     group = models.ForeignKey('RackGroup', related_name='racks', blank=True, null=True, on_delete=models.SET_NULL)
     tenant = models.ForeignKey(Tenant, blank=True, null=True, related_name='racks', on_delete=models.PROTECT)
-    u_height = models.PositiveSmallIntegerField(default=42, verbose_name='Height (U)')
+    role = models.ForeignKey('RackRole', related_name='racks', blank=True, null=True, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(choices=RACK_TYPE_CHOICES, blank=True, null=True, verbose_name='Type')
+    width = models.PositiveSmallIntegerField(choices=RACK_WIDTH_CHOICES, default=RACK_WIDTH_19IN, verbose_name='Width',
+                                             help_text='Rail-to-rail width')
+    u_height = models.PositiveSmallIntegerField(default=42, verbose_name='Height (U)',
+                                                validators=[MinValueValidator(1), MaxValueValidator(100)])
     comments = models.TextField(blank=True)
 
     objects = RackManager()
@@ -277,6 +371,9 @@ class Rack(CreatedUpdatedModel):
             self.name,
             self.facility_id or '',
             self.tenant.name if self.tenant else '',
+            self.role.name if self.role else '',
+            self.get_type_display() if self.type else '',
+            str(self.width),
             str(self.u_height),
         ])
 
@@ -584,7 +681,7 @@ class DeviceRole(models.Model):
     """
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(unique=True)
-    color = models.CharField(max_length=30, choices=DEVICE_ROLE_COLOR_CHOICES)
+    color = models.CharField(max_length=30, choices=ROLE_COLOR_CHOICES)
 
     class Meta:
         ordering = ['name']
@@ -640,6 +737,8 @@ class Device(CreatedUpdatedModel):
     platform = models.ForeignKey('Platform', related_name='devices', blank=True, null=True, on_delete=models.SET_NULL)
     name = NullableCharField(max_length=50, blank=True, null=True, unique=True)
     serial = models.CharField(max_length=50, blank=True, verbose_name='Serial number')
+    asset_tag = NullableCharField(max_length=50, blank=True, null=True, unique=True, verbose_name='Asset tag',
+                                  help_text='A unique tag used to identify this device')
     rack = models.ForeignKey('Rack', related_name='devices', on_delete=models.PROTECT)
     position = models.PositiveSmallIntegerField(blank=True, null=True, validators=[MinValueValidator(1)],
                                                 verbose_name='Position (U)',
@@ -735,6 +834,7 @@ class Device(CreatedUpdatedModel):
             self.device_type.model,
             self.platform.name if self.platform else '',
             self.serial,
+            self.asset_tag if self.asset_tag else '',
             self.rack.site.name,
             self.rack.name,
             str(self.position) if self.position else '',
@@ -932,6 +1032,13 @@ class Interface(models.Model):
     def __unicode__(self):
         return self.name
 
+    def clean(self):
+
+        if self.form_factor == IFACE_FF_VIRTUAL and self.is_connected:
+            raise ValidationError({'form_factor': "Virtual interfaces cannot be connected to another interface or "
+                                                  "circuit. Disconnect the interface or choose a physical form "
+                                                  "factor."})
+
     @property
     def is_physical(self):
         return self.form_factor != IFACE_FF_VIRTUAL
@@ -1030,6 +1137,8 @@ class Module(models.Model):
     device = models.ForeignKey('Device', related_name='modules', on_delete=models.CASCADE)
     parent = models.ForeignKey('self', related_name='submodules', blank=True, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=50, verbose_name='Name')
+    manufacturer = models.ForeignKey('Manufacturer', related_name='modules', blank=True, null=True,
+                                     on_delete=models.PROTECT)
     part_id = models.CharField(max_length=50, verbose_name='Part ID', blank=True)
     serial = models.CharField(max_length=50, verbose_name='Serial number', blank=True)
     discovered = models.BooleanField(default=False, verbose_name='Discovered')

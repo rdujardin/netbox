@@ -182,18 +182,14 @@ class PrefixForm(forms.ModelForm, BootstrapMixin):
             self.fields['vlan'].choices = []
 
     def clean_prefix(self):
-        data = self.cleaned_data['prefix']
-        try:
-            prefix = IPNetwork(data)
-        except:
-            raise
+        prefix = self.cleaned_data['prefix']
         if prefix.version == 4 and prefix.prefixlen == 32:
             raise forms.ValidationError("Cannot create host addresses (/32) as prefixes. These should be IPv4 "
                                         "addresses instead.")
         elif prefix.version == 6 and prefix.prefixlen == 128:
             raise forms.ValidationError("Cannot create host addresses (/128) as prefixes. These should be IPv6 "
                                         "addresses instead.")
-        return data
+        return prefix
 
 
 class PrefixFromCSVForm(forms.ModelForm):
@@ -293,7 +289,9 @@ def prefix_role_choices():
 
 
 class PrefixFilterForm(forms.Form, BootstrapMixin):
-    parent = forms.CharField(required=False, label='Search Within')
+    parent = forms.CharField(required=False, label='Search Within', widget=forms.TextInput(attrs={
+        'placeholder': 'Network',
+    }))
     vrf = forms.MultipleChoiceField(required=False, choices=prefix_vrf_choices, label='VRF',
                                     widget=forms.SelectMultiple(attrs={'size': 6}))
     tenant = forms.MultipleChoiceField(required=False, choices=tenant_choices, label='Tenant',
@@ -444,6 +442,9 @@ def ipaddress_vrf_choices():
 
 
 class IPAddressFilterForm(forms.Form, BootstrapMixin):
+    parent = forms.CharField(required=False, label='Search Within', widget=forms.TextInput(attrs={
+        'placeholder': 'Prefix',
+    }))
     family = forms.ChoiceField(required=False, choices=ipaddress_family_choices, label='Address Family')
     vrf = forms.MultipleChoiceField(required=False, choices=ipaddress_vrf_choices, label='VRF',
                                     widget=forms.SelectMultiple(attrs={'size': 6}))
