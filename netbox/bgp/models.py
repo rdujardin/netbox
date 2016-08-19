@@ -6,6 +6,7 @@ from utilities.whois import whois
 
 import subprocess
 import json
+import netbox.configuration
 
 
 class ASN(CreatedUpdatedModel):
@@ -47,7 +48,7 @@ class ASN(CreatedUpdatedModel):
         super(ASN, self).save(*args, **kwargs)
 
     def load_data(self):
-        self_ixp_asn = 51706
+        self_ixp_asn = netbox.configuration.BGP_SELF_ASN
         look_up = 'AS{}'.format(self.asn)
         who = ''
         try:
@@ -84,11 +85,11 @@ class ASN(CreatedUpdatedModel):
                             elif 'ipv6' in io and not 'ipv4' in io:
                                 self.as_set6 = as_set
                             else:
-                                self.as_set4 = as_set
-                                self.as_set6 = as_set
+                                self.as_set4 = ''
+                                self.as_set6 = ''
             else:
-                self.as_set4 = None
-                self.as_set6 = None
+                self.as_set4 = ''
+                self.as_set6 = ''
 
             bgpq3_queries_v4 = (
                 self.as_set4 if self.as_set4 else None,
@@ -100,9 +101,11 @@ class ASN(CreatedUpdatedModel):
                 'AS{}'.format(self.asn) if not self.as_set6 else None,
             )
 
+            bgpq3_bin = netbox.configuration.BGP_BGPQ3_PATH if netbox.configuration.BGP_BGPQ3_PATH else 'bgpq3'
+
             for q in bgpq3_queries_v4:
                 if q:
-                    cmd = ['bgpq3', '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-l', 'data', q]
+                    cmd = [bgpq3_bin, '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-l', 'data', q]
                     try:
                         bgpq3 = json.loads(subprocess.check_output(cmd))
                         prefixes = []
@@ -114,7 +117,7 @@ class ASN(CreatedUpdatedModel):
 
             for q in bgpq3_queries_v6:
                 if q:
-                    cmd = ['bgpq3', '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-6', '-l', 'data', q]
+                    cmd = [bgpq3_bin, '-h', 'rr.ntt.net', '-S', 'RIPE,APNIC,AFRINIC,ARIN,NTTCOM,ALTDB,BBOI,BELL,GT,JPIRR,LEVEL3,RADB,RGNET,SAVVIS,TC', '-A', '-j', '-6', '-l', 'data', q]
                     try:
                         bgpq3 = json.loads(subprocess.check_output(cmd))
                         prefixes = []

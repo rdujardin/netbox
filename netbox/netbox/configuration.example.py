@@ -86,3 +86,7 @@ PREFER_IPV4 = False
 # Enforcement of unique IP space can be toggled on a per-VRF basis. To enforce unique IP space within the global table
 # (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
 ENFORCE_GLOBAL_UNIQUE = False
+
+# BGP
+BGP_SELF_ASN = 51706
+BGP_BGPQ3_PATH = 'bgpq3'
