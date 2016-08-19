@@ -1,4 +1,5 @@
 import sys
+import importlib
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -68,6 +69,6 @@ def userscript(request):
     if request.method == 'GET':
         if 'script' in request.GET:
             try:
-                return HttpResponse(unicode(__import__('userscripts.%s' % request.GET['script']).call(**request.GET)))
+                return HttpResponse(unicode(importlib.import_module('userscripts.%s' % request.GET['script']).call(request.GET)))
             except:
                 return HttpResponse('')

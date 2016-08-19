@@ -4,6 +4,7 @@ from django.dispatch import Signal
 import logging
 from logging.handlers import RotatingFileHandler
 import netbox.configuration
+import importlib
 
 
 pre_bulk_edit = Signal(providing_args=['pk_list'])
@@ -30,7 +31,7 @@ def _load_script(name):
     log_handler.setLevel(logging.DEBUG)
     log_handler.setFormatter(log_formatter)
     log.addHandler(log_handler)
-    mod = __import__('userscripts.%s' % name)
+    mod = importlib.import_module('userscripts.%s' % name)
 
 
 def _load():

@@ -39,9 +39,9 @@ def callback_pre_bulk_edit(sender, **kwargs):
     logger = logging.getLogger('example.py')
     logger.info(msg)
 
-def call(**kwargs):
+def call(get):
     logger = logging.getLogger('example.py')
-    response = 'Hello {}.'.format(name if name else 'folk')
+    response = 'Hello {}.'.format(get['name'] if 'name' in get else 'folk')
     logger.info('Called, response : {}'.format(response))
     return response
     
