@@ -108,10 +108,15 @@
 					<td>Negative result TTL, in seconds</td>
 					<td>1800</td>
 				</tr>
+                                <tr>
+                                        <td>Reverse DNS - Extra Conf</td>
+                                        <td>Extra conf related to the zone, to put in your DNS server main conf file</td>
+                                        <td>"notify: 10.120.0.1 NOKEY\nprovide-xfr: 10.120.0.1 NOKEY"</td>
+                                </tr>
 			</tbody>
 		</table>
 		<h4>Example</h4>
-		<pre>192.168.42.0/24,65000:123,ABC01,HQ,Customers,801,Active,Customer,7th floor WiFi,10800,@,ns.foo.net. noc.foo.net.,3600,3600,604800,1800</pre>
+		<pre>192.168.42.0/24,65000:123,ABC01,HQ,Customers,801,Active,Customer,7th floor WiFi,10800,@,ns.foo.net. noc.foo.net.,3600,3600,604800,1800,"notify: 10.120.0.1 NOKEY\nprovide-xfr: 10.120.0.1 NOKEY"</pre>
 	</div>
 </div>
 {% endblock %}

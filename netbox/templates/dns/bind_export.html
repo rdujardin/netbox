@@ -33,6 +33,7 @@
                     <tr><td>
                         <pre id="bind_export_{{ z.num }}" style="overflow: auto; overflow-x: auto; overflow-y: auto; word-wrap: break-word; white-space: pre;">{{ z.content }}</pre>
                     </td></tr>
+                    {% if z.extra_conf %}<tr><td><pre style="overflow: auto; overflow-x: auto; overflow-y: auto; word-wrap: break-word; white-space: pre;">{{ z.extra_conf }}</pre></td></tr>{% endif %}
                 </table>
             </div>
         {% endfor %}

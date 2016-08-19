@@ -68,6 +68,11 @@
 					<td>Negative result TTL, in seconds</td>
 					<td>1800</td>
 				</tr>
+                                <tr>
+                                        <td>Extra Conf</td>
+                                        <td>Extra conf related to the zone, to put in your DNS server main conf file</td>
+                                        <td>"notify: 10.120.0.1 NOKEY\nprovide-xfr: 10.120.0.1 NOKEY"</td>
+                                </tr>
 				<tr>
 					<td>Description</td>
 					<td>Description (optional)</td>
@@ -76,7 +81,7 @@
 			</tbody>
 		</table>
 		<h4>Example</h4>
-		<pre>foo.net,10800,@,ns.foo.net. noc.foo.net.,3600,3600,604800,1800,Mail servers zone</pre>
+		<pre>foo.net,10800,@,ns.foo.net. noc.foo.net.,3600,3600,604800,1800,"notify: 10.120.0.1 NOKEY\nprovide-xfr: 10.120.0.1 NOKEY",Mail servers zone</pre>
 	</div>
 </div>
 {% endblock %}

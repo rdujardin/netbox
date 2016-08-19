@@ -30,6 +30,7 @@ class Zone(CreatedUpdatedModel):
     soa_retry = models.PositiveIntegerField()
     soa_expire = models.PositiveIntegerField()
     soa_minimum = models.PositiveIntegerField()
+    extra_conf = models.CharField(max_length=500, blank=True)
     description = models.CharField(max_length=100, blank=True)
 
     class Meta:
@@ -82,6 +83,7 @@ class Zone(CreatedUpdatedModel):
             str(self.soa_retry),
             str(self.soa_expire),
             str(self.soa_minimum),
+            '"{}"'.format(self.extra_conf) if self.extra_conf else '',
             self.description,
         ])
 
@@ -185,6 +187,7 @@ def export_bind_forward():
         zones_list.append({
             'num': len(zones_list),
             'id': z.name,
+            'extra_conf': z.extra_conf,
             'content': z.to_bind(records)
         })
 
@@ -201,14 +204,15 @@ def export_bind_reverse():
         z = p.to_bind(child_ip)
         for zz in z:
             if not zz['id'] in zones:
-                zones[zz['id']] = zz['content']
+                zones[zz['id']] = (zz['content'], p.extra_conf)
 
     zones_list = []
     for zid, zc in zones.items():
         zones_list.append({
             'num': len(zones_list),
             'id': zid,
-            'content': zc,
+            'content': zc[0],
+            'extra_conf': zc[1],
         })
 
     return zones_list
