@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^api/dcim/', include('dcim.api.urls', namespace='dcim-api')),
     url(r'^api/ipam/', include('ipam.api.urls', namespace='ipam-api')),
     url(r'^api/dns/', include('dns.api.urls', namespace='dns-api')),
+    url(r'^api/bgp/', include('bgp.api.urls', namespace='bgp-api')),
     url(r'^api/secrets/', include('secrets.api.urls', namespace='secrets-api')),
     url(r'^api/tenancy/', include('tenancy.api.urls', namespace='tenancy-api')),
     url(r'^api/docs/', include('rest_framework_swagger.urls')),
