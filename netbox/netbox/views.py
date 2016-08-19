@@ -1,6 +1,7 @@
 import sys
 
 from django.shortcuts import render
+from django.http import HttpResponse
 
 from circuits.models import Provider, Circuit
 from dcim.models import Site, Rack, Device, ConsolePort, PowerPort, InterfaceConnection
@@ -60,3 +61,13 @@ def handle_500(request):
         'exception': str(type_),
         'error': error,
     }, status=500)
+
+
+def userscript(request):
+    """Call an user script"""
+    if request.method == 'GET':
+        if 'script' in request.GET:
+            try:
+                return HttpResponse(unicode(__import__('userscripts.%s' % request.GET['script']).call(**request.GET)))
+            except:
+                return HttpResponse('')

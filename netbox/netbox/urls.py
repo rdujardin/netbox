@@ -2,7 +2,7 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.defaults import page_not_found
 
-from views import home, trigger_500, handle_500
+from views import home, trigger_500, handle_500, userscript
 from users.views import login, logout
 
 import userscripts
@@ -18,6 +18,9 @@ urlpatterns = [
     # Login/logout
     url(r'^login/$', login, name='login'),
     url(r'^logout/$', logout, name='logout'),
+
+    # User scripts
+    url(r'^userscript/$', userscript, name='userscript'),
 
     # Apps
     url(r'^circuits/', include('circuits.urls', namespace='circuits')),

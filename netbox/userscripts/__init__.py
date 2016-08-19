@@ -1,6 +1,9 @@
 import os
 import time
 from django.dispatch import Signal
+import logging
+from logging.handlers import RotatingFileHandler
+import netbox.configuration
 
 
 pre_bulk_edit = Signal(providing_args=['pk_list'])
@@ -20,6 +23,13 @@ class signal_bulk_edit:
 
 
 def _load_script(name):
+    log = logging.getLogger(name)
+    log.setLevel(logging.DEBUG)
+    log_formatter = logging.Formatter('--------------------------------------------------\n%(asctime)s - {} - %(levelname)s\n-------------------------\n%(message)s\n--------------------------------------------------\n'.format(name))
+    log_handler = RotatingFileHandler(netbox.configuration.USERSCRIPTS_LOG_FILE if netbox.configuration.USERSCRIPTS_LOG_FILE else 'userscripts.log', 'a', netbox.configuration.USERSCRIPTS_LOG_MAX_SIZE if netbox.configuration.USERSCRIPTS_LOG_MAX_SIZE else 5000000, 1)
+    log_handler.setLevel(logging.DEBUG)
+    log_handler.setFormatter(log_formatter)
+    log.addHandler(log_handler)
     mod = __import__('userscripts.%s' % name)
 
 
