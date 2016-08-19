@@ -32,10 +32,11 @@ def whois(server, query, parsed=True):
                         else:
                             if len(linesplit) > 2:
                                 linesplit[1] = ':'.join(linesplit[1:])
-                            key = linesplit[0]
-                            val = linesplit[1].strip()
+                            if len(linesplit) > 1:
+                                key = linesplit[0]
+                                val = linesplit[1].strip()
 
-                            parse_list.append([key, val])
+                                parse_list.append([key, val])
 
             parsed = defaultdict(list)
             for k, v in parse_list:

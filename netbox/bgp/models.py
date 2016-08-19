@@ -48,28 +48,47 @@ class ASN(CreatedUpdatedModel):
 
     def load_data(self):
         self_ixp_asn = 51706
-        who = whois('rr.ntt.net', 'AS{}'.format(self.asn))
-        if not who:
-            return
-        self.as_name = who['as-name'][0] if 'as-name' in who else self.as_name
+        look_up = 'AS{}'.format(self.asn)
+        who = ''
+        try:
+            who = whois('rr.ntt.net', look_up)
+        except:
+            try:
+                who = whois('whois.ripe.net', look_up)
+            except:
+                who = ''
+
+        if who:
+            self.as_name = who['as-name'][0] if 'as-name' in who else self.as_name
 
         if not self.lock_as_set:
-            ln_export = who['export'] if 'export' in who else []
-            ln_export_via = who['export-via'] if 'export-via' in who else []
-            ln_mp_export = who['mp-export'] if 'mp-export' in who else []
-            ios = ln_export + ln_export_via + ln_mp_export
-            for io in ios:
-                if 'AS{}'.format(self_ixp_asn) in io:
-                    as_set = io.split('announce')
-                    if as_set:
-                        as_set = as_set[len(as_set) - 1].strip()
-                        if 'ipv4' in io and not 'ipv6' in io:
-                            self.as_set4 = as_set
-                        elif 'ipv6' in io and not 'ipv4' in io:
-                            self.as_set6 = as_set
-                        else:
-                            self.as_set4 = as_set
-                            self.as_set6 = as_set
+            if who:
+                ln_export = who['export'] if 'export' in who else []
+                ln_export_via = who['export-via'] if 'export-via' in who else []
+                ln_mp_export = who['mp-export'] if 'mp-export' in who else []
+                ios = ln_export + ln_export_via + ln_mp_export
+                for io in ios:
+                    if 'AS{}'.format(self_ixp_asn) in io:
+
+                        as_set = None
+                        aa1 = io.find('announce')
+                        if aa1 == -1:
+                            aa1 = io.find('ANNOUNCE')
+
+                        if aa1 != -1 and aa1 + 8 < len(io):
+                            as_set = io[aa1 + 8:].strip()
+
+                        if as_set:
+                            if 'ipv4' in io and not 'ipv6' in io:
+                                self.as_set4 = as_set
+                            elif 'ipv6' in io and not 'ipv4' in io:
+                                self.as_set6 = as_set
+                            else:
+                                self.as_set4 = as_set
+                                self.as_set6 = as_set
+            else:
+                self.as_set4 = None
+                self.as_set6 = None
 
             bgpq3_queries_v4 = (
                 self.as_set4 if self.as_set4 else None,
@@ -77,8 +96,8 @@ class ASN(CreatedUpdatedModel):
             )
 
             bgpq3_queries_v6 = (
-                self.as_set6 if self.as_set6 and self.as_set4 else None,
-                'AS{}'.format(self.asn) if not self.as_set4 else None,
+                self.as_set6 if self.as_set6 else None,
+                'AS{}'.format(self.asn) if not self.as_set6 else None,
             )
 
             for q in bgpq3_queries_v4:
@@ -91,7 +110,7 @@ class ASN(CreatedUpdatedModel):
                             prefixes.append(p['prefix'])
                         self.prefixes4 = ';'.join(prefixes)
                     except:
-                        return
+                        self.prefixes4 = ''
 
             for q in bgpq3_queries_v6:
                 if q:
@@ -103,18 +122,4 @@ class ASN(CreatedUpdatedModel):
                             prefixes.append(p['prefix'])
                         self.prefixes6 = ';'.join(prefixes)
                     except:
-                        return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                        self.prefixes6 = ''
