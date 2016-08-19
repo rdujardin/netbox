@@ -4,7 +4,7 @@ from django.db.models import Q
 
 from .models import (
     ConsolePort, ConsoleServerPort, Device, DeviceRole, DeviceType, Interface, InterfaceConnection, Manufacturer,
-    Platform, PowerOutlet, PowerPort, Rack, RackGroup, Site,
+    Platform, PowerOutlet, PowerPort, Rack, RackGroup, RackRole, Site,
 )
 from tenancy.models import Tenant
 
@@ -95,6 +95,17 @@ class RackFilter(django_filters.FilterSet):
         queryset=Tenant.objects.all(),
         to_field_name='slug',
         label='Tenant (slug)',
+    )
+    role_id = django_filters.ModelMultipleChoiceFilter(
+        name='role',
+        queryset=RackRole.objects.all(),
+        label='Role (ID)',
+    )
+    role = django_filters.ModelMultipleChoiceFilter(
+        name='role',
+        queryset=RackRole.objects.all(),
+        to_field_name='slug',
+        label='Role (slug)',
     )
 
     class Meta:
@@ -228,15 +239,16 @@ class DeviceFilter(django_filters.FilterSet):
 
     class Meta:
         model = Device
-        fields = ['q', 'name', 'site_id', 'site', 'rack_id', 'role_id', 'role', 'device_type_id', 'manufacturer_id',
-                  'manufacturer', 'model', 'platform_id', 'platform', 'status', 'is_console_server', 'is_pdu',
-                  'is_network_device']
+        fields = ['q', 'name', 'serial', 'asset_tag', 'site_id', 'site', 'rack_id', 'role_id', 'role', 'device_type_id',
+                  'manufacturer_id', 'manufacturer', 'model', 'platform_id', 'platform', 'status', 'is_console_server',
+                  'is_pdu', 'is_network_device']
 
     def search(self, queryset, value):
         return queryset.filter(
             Q(name__icontains=value) |
-            Q(serial__icontains=value) |
-            Q(modules__serial__icontains=value) |
+            Q(serial__icontains=value.strip()) |
+            Q(modules__serial__icontains=value.strip()) |
+            Q(asset_tag=value.strip()) |
             Q(comments__icontains=value)
         ).distinct()
 
