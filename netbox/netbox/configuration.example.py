@@ -86,3 +86,7 @@ PREFER_IPV4 = False
 # Enforcement of unique IP space can be toggled on a per-VRF basis. To enforce unique IP space within the global table
 # (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
 ENFORCE_GLOBAL_UNIQUE = False
+
+# User scripts logging
+USERSCRIPTS_LOG_FILE = 'userscripts.log'
+USERSCRIPTS_LOG_MAX_SIZE = 5000000
