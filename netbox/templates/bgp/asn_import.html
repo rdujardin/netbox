@@ -1,0 +1,77 @@
+{% extends '_base.html' %}
+{% load render_table from django_tables2 %}
+{% load form_helpers %}
+
+{% block title %}ASN Import{% endblock %}
+
+{% block content %}
+<h1>ASN Import</h1>
+<div class="row">
+    <div class="col-md-6">
+        <form action="." method="post" class="form">
+            {% csrf_token %}
+            {% render_form form %}
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a href="{% url obj_list_url %}" class="btn btn-default">Cancel</a>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <h4>CSV Format</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>ASN</td>
+                    <td>AS Number</td>
+                    <td>51706</td>
+                </tr>
+                <tr>
+                    <td>AS Name</td>
+                    <td>AS Name</td>
+                    <td>France-IX</td>
+                </tr>
+                <tr>
+                    <td>Tenant</td>
+                    <td>Tenant</td>
+                    <td>France IX</td>
+                </tr>
+                <tr>
+                    <td>AS SET v4</td>
+                    <td>AS SET or ASN to load for IPv4</td>
+                    <td>AS-FRANCEIX</td>
+                </tr>
+                <tr>
+                    <td>AS SET v6</td>
+                    <td>AS SET or ASN to load for IPv6</td>
+                    <td>AS-FRANCEIXV6</td>
+                </tr>
+                <tr>
+                    <td>Locked AS SETs ?</td>
+                    <td>Deactivates auto data loading and prevents manually-set data loss</td>
+                    <td>False</td>
+                </tr>
+                <tr>
+                    <td>Prefixes v4</td>
+                    <td>Allowed prefixes for IPv4 (semi-colon separated)</td>
+                    <td>217.87.55.0/23;24.34.44.56.0/17</td>
+                </tr>
+                <tr>
+                    <td>Prefixes v6</td>
+                    <td>Allowed prefixes for IPv6 (semi-colon separated)</td>
+                    <td>2006:5::/64;32:32:32::/48</td>
+                </tr>
+            </tbody>
+        </table>
+        <h4>Example</h4>
+        <pre>51706,France-IX,France IX,AS-FRANCEIX,AS-FRANCEIXV6,False,217.87.55.0/23;24.34.44.56.0/17,2006:5::/64;32:32:32::/48</pre>
+    </div>
+</div>
+{% endblock %}

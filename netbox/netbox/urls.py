@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^dcim/', include('dcim.urls', namespace='dcim')),
     url(r'^ipam/', include('ipam.urls', namespace='ipam')),
     url(r'^dns/', include('dns.urls', namespace='dns')),
+    url(r'^bgp/', include('bgp.urls', namespace='bgp')),
     url(r'^secrets/', include('secrets.urls', namespace='secrets')),
     url(r'^tenancy/', include('tenancy.urls', namespace='tenancy')),
     url(r'^profile/', include('users.urls', namespace='users')),
